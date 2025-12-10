@@ -319,8 +319,7 @@ const ActiveWorkoutPage: React.FC = () => {
     return (
       <>
         <div
-          className={`min-h-screen w-full flex flex-col ${bgClass} ${textClass}`}
-          style={{ height: '100vh' }}
+          className={`summary-page w-full ${bgClass} ${textClass}`}
         >
           {/* Header */}
           <div className={`flex items-center justify-between px-4 py-3 border-b ${borderClass}`}>
@@ -336,7 +335,7 @@ const ActiveWorkoutPage: React.FC = () => {
           </div>
 
           {/* Contenu */}
-          <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="px-4 py-6">
             <div className="space-y-6">
               {/* Titre */}
               <div>
@@ -434,15 +433,15 @@ const ActiveWorkoutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Bouton de démarrage */}
-            <div className={`border-t ${borderClass} px-4 py-4`}>
-          <button
-            onClick={() => setShowSummary(false)}
-                className={`w-full py-4 rounded-xl font-bold text-lg transition-colors active:scale-95 btn-primary`}
-          >
-            Commencer la séance
-          </button>
-        </div>
+          {/* Bouton de démarrage */}
+          <div className={`border-t ${borderClass} px-4 py-4`}>
+            <button
+              onClick={() => setShowSummary(false)}
+              className={`w-full py-4 rounded-xl font-bold text-lg transition-colors active:scale-95 btn-primary`}
+            >
+              Commencer la séance
+            </button>
+          </div>
         </div>
         {quitDialog}
       </>
