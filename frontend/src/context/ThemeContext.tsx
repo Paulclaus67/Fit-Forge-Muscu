@@ -23,6 +23,7 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
       '--text': '#0f172a',
       '--text-secondary': '#64748b',
       '--border': '#e2e8f0',
+      '--border-accent': '#94a3b8',
       '--primary': '#10b981',
       '--primary-light': '#d1fae5',
       '--accent': '#0ea5e9',
@@ -33,6 +34,7 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
       '--text': '#f8fafc',
       '--text-secondary': '#cbd5e1',
       '--border': '#334155',
+      '--border-accent': '#475569',
       '--primary': '#10b981',
       '--primary-light': '#065f46',
       '--accent': '#0ea5e9',
@@ -45,6 +47,7 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
       '--text': '#1b3a1b',
       '--text-secondary': '#4b6043',
       '--border': '#a3b18a',
+      '--border-accent': '#5a8c3a',
       '--primary': '#047857',
       '--primary-light': '#a7f3d0',
       '--accent': '#f59e0b',
@@ -57,6 +60,7 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
       '--text': '#e6f4ea',
       '--text-secondary': '#b7e4c7',
       '--border': '#3a5a40',
+      '--border-accent': '#2d5a3d',
       '--primary': '#34d399',
       '--primary-light': '#047857',
       '--accent': '#fbbf24',
@@ -71,6 +75,7 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
       '--text': '#00334e',
       '--text-secondary': '#0077b6',
       '--border': '#90caf9',
+      '--border-accent': '#0288d1',
       '--primary': '#0260a3',
       '--primary-light': '#a7e9f7',
       '--accent': '#f97316',
@@ -83,6 +88,7 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
       '--text': '#e0f7fa',
       '--text-secondary': '#90caf9',
       '--border': '#0077b6',
+      '--border-accent': '#0d2d42',
       '--primary': '#06d6ff',
       '--primary-light': '#003d52',
       '--accent': '#ff6b35',
@@ -90,18 +96,18 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
       '--highlight': '#ffb703',
     },
   },
-  sunset: {
+    sunset: {
     light: {
       '--bg': '#ffe5d9',
       '--bg-secondary': '#ffd6ba',
       '--text': '#6a040f',
       '--text-secondary': '#ff7f50',
       '--border': '#ffb4a2',
+      '--border-accent': '#ff7f50',
       '--primary': '#ea580c',
       '--primary-light': '#ffb703',
       '--accent': '#dc2626',
       '--accent-secondary': '#ff7f50',
-      '--highlight': '#ffd6ba',
     },
     dark: {
       '--bg': '#6a040f',
@@ -109,6 +115,7 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
       '--text': '#ffd6ba',
       '--text-secondary': '#ffb4a2',
       '--border': '#ff7f50',
+      '--border-accent': '#ff6b35',
       '--primary': '#ff9966',
       '--primary-light': '#ea580c',
       '--accent': '#ff4444',
@@ -117,6 +124,7 @@ const THEMES: Record<ThemeName, Record<ThemeMode, Record<string, string>>> = {
     },
   },
 };
+ 
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 

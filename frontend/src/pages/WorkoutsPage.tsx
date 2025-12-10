@@ -23,6 +23,8 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, kind, onDuplicate, o
     metaParts.push(`${exerciseCount} exos`);
   }
 
+  const actionButtonBase = 'inline-flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap shrink-0';
+
   return (
     <div className="group rounded-2xl border border-app bg-app-secondary/80 p-4 shadow-sm hover:shadow-md hover:border-primary/50 transition-all">
       <div className="flex items-start justify-between gap-3">
@@ -60,24 +62,27 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, kind, onDuplicate, o
           Lancer la séance
         </Link>
 
-        <div className="flex flex-wrap items-center gap-3 text-[12px] text-app-secondary">
+        <div className="w-full p-2 rounded-lg border border-app bg-app/30 grid grid-cols-12 gap-2 text-[12px] text-app-secondary">
           {kind === 'mine' && (
             <Link
               to={`/workouts/${workout.id}/edit`}
-              className="px-3 py-2 rounded-lg border border-app text-app text-sm hover:border-primary/40 hover:text-primary transition-colors"
+              className={`${actionButtonBase} w-full col-span-4 border-app text-app hover:border-primary/40 hover:text-primary`}
             >
               <PencilIcon className="w-4 h-4 inline" /> Modifier
             </Link>
           )}
 
-          <Link to={`/workouts/${workout.id}`} className="hover:text-primary transition-colors">
+          <Link
+            to={`/workouts/${workout.id}`}
+            className={`${actionButtonBase} w-full col-span-3 border-app text-app-secondary hover:border-primary/30 hover:text-primary`}
+          >
             Détails
           </Link>
 
           {kind === 'mine' && onDelete && (
             <button
               onClick={() => onDelete(String(workout.id))}
-              className="text-red-500 hover:text-red-400 transition-colors"
+              className={`${actionButtonBase} w-full col-span-5 border-red-500/60 text-red-500 hover:bg-red-500/10 hover:text-red-400`}
               title="Supprimer la séance"
             >
               <TrashIcon className="w-4 h-4 inline" /> Supprimer

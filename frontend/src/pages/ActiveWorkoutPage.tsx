@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWorkout, type WorkoutDetail } from '../api/workouts';
-import { XMarkIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useTheme } from '../context/ThemeContext';
 import './ActiveWorkoutPage.css';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
@@ -81,8 +81,8 @@ const ActiveWorkoutPage: React.FC = () => {
   const { mode } = useTheme();
   const isDarkMode = mode === 'dark';
 
-  // Affichage du détail de l'exercice ou du chrono
-  const [showDetails, setShowDetails] = useState(false);
+  // État d'affichage détails/options avancées
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
   // Afficher le récap au démarrage
   const [showSummary, setShowSummary] = useState(() => {
@@ -307,6 +307,15 @@ const ActiveWorkoutPage: React.FC = () => {
 
   // Nombre total d'exercices
   const totalExercises = workout?.exercises.length ?? 0;
+
+  // Progression globale basée sur toutes les séries (plus précis qu'au niveau exercice)
+  const totalSegments = workout?.exercises.reduce((sum, ex) => sum + (ex.sets ?? 1), 0) ?? 0;
+  const completedBeforeCurrent = workout?.exercises.slice(0, exerciseIndex).reduce((sum, ex) => sum + (ex.sets ?? 1), 0) ?? 0;
+  const completedInCurrent = Math.max(0, setNumber - 1);
+  const progressPercent = totalSegments > 0
+    ? Math.min(100, ((completedBeforeCurrent + completedInCurrent) / totalSegments) * 100)
+    : 0;
+  const progressPercentDisplay = Math.round(progressPercent);
 
   // Exercice courant
   const currentExercise = workout?.exercises[exerciseIndex];
@@ -605,264 +614,218 @@ const ActiveWorkoutPage: React.FC = () => {
           <ThemeSwitcher size="sm" />
         </div>
 
-        {/* Barre de progression simplifiée - juste la barre sans texte redondant */}
-        <div className={`px-4 py-2 border-b ${borderClass}`}>
-                <div className={`w-full ${cardBgClass} rounded-full h-2 overflow-hidden`}>
+        {/* Barre de progression globale (par séries) */}
+        <div className={`px-4 py-3 border-b ${borderClass} space-y-1`}>
+          <div className="flex items-center justify-between text-[11px] font-semibold">
+            <span className={subTextClass}>Progression globale</span>
+            <span className="text-primary">{progressPercentDisplay}%</span>
+          </div>
+          <div className={`w-full ${cardBgClass} rounded-full h-2 overflow-hidden`}>
             <div
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((exerciseIndex + 1) / totalExercises) * 100}%` }}
+              className="bg-primary h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
 
-        {/* Contenu principal */}
+        {/* Contenu principal - Structure unifiée */}
         {workout && currentExercise && (
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Affichage chrono ou détails */}
-            {restRemaining !== null && !showDetails ? (
-              // ===== VUE CHRONO PRINCIPAL =====
-              <div className="flex-1 flex flex-col justify-between items-center px-4 py-3 sm:py-6 gap-3 sm:gap-6 overflow-y-auto">
-                {/* En-tête avec contexte exercice/série - Compact sur mobile */}
-                <div className={`w-full ${cardBgClass} border-2 border-primary rounded-lg p-2 sm:p-4 text-center space-y-2`}>
-                  <div className="space-y-0.5">
-                    <p className={`text-[10px] sm:text-xs uppercase tracking-wider font-bold ${subTextClass}`}>
-                      Exercice actuel
-                    </p>
-                    <h2 className="text-lg sm:text-2xl font-bold text-primary line-clamp-2">
-                      {currentExercise.exercise.name}
-                    </h2>
-                  </div>
-                  
-                  <div className="flex gap-2 sm:gap-4 justify-center pt-1 sm:pt-2">
-                    <div className={`flex-1 bg-app-secondary rounded p-1.5 sm:p-2`}>
-                      <p className={`text-[9px] sm:text-xs uppercase ${subTextClass}`}>Exercice</p>
-                      <p className="text-base sm:text-lg font-bold text-primary">
-                        {exerciseIndex + 1}/{totalExercises}
-                      </p>
-                    </div>
-                    <div className={`flex-1 bg-app-secondary rounded p-1.5 sm:p-2`}>
-                      <p className={`text-[9px] sm:text-xs uppercase ${subTextClass}`}>Série</p>
-                      <p className="text-base sm:text-lg font-bold text-primary">
-                        {setNumber}/{currentSetsTotal}
-                      </p>
-                    </div>
+            {/* ===== ÉTAT REPOS - Vue simplifiée =====  */}
+            {restRemaining !== null ? (
+              <div className="flex-1 flex flex-col justify-between items-center px-4 py-2 sm:py-4 gap-3 sm:gap-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
+                {/* Bloc 1: Exercice actuel + série */}
+                <div className={`w-full ${cardBgClass} border-2 border-primary rounded-lg p-3 sm:p-4 text-center space-y-1.5`}>
+                  <p className={`text-[10px] sm:text-xs uppercase tracking-wider font-bold ${subTextClass}`}>
+                    Exercice actuel
+                  </p>
+                  <h2 className="text-lg sm:text-2xl font-bold text-primary line-clamp-2">
+                    {currentExercise.exercise.name}
+                  </h2>
+                  <div className="flex flex-wrap gap-2 sm:gap-3 justify-center pt-1">
+                    <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-primary/10 text-primary border border-primary/30">
+                      Série {setNumber}/{currentSetsTotal}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border border-app/40 text-app">
+                      Exercice {exerciseIndex + 1}/{totalExercises}
+                    </span>
                   </div>
                 </div>
 
-                {/* Chrono géant */}
-                <div className="flex flex-col items-center gap-2 sm:gap-4 flex-1 justify-center">
-                  <p className={`text-xs sm:text-sm uppercase tracking-wide ${subTextClass}`}>
+                {/* Bloc 2: Chrono géant de repos */}
+                <div className="flex flex-col items-center gap-2 flex-1 justify-center">
+                  <p className={`text-xs uppercase tracking-wide ${subTextClass}`}>
                     Temps de repos
                   </p>
                   <div className="flex items-baseline gap-1 select-none chrono-display">
-                    <span className="chrono-giant text-6xl sm:text-[100px] md:text-[120px] font-mono font-bold leading-none">
+                    <span className="chrono-giant text-5xl sm:text-[90px] font-mono font-bold leading-none">
                       {restTime?.min}
                     </span>
-                    <span className="text-5xl sm:text-[90px] md:text-[100px] font-mono font-bold opacity-60 leading-none">
+                    <span className="text-4xl sm:text-[80px] font-mono font-bold opacity-60 leading-none">
                       :
                     </span>
-                    <span className="chrono-giant text-6xl sm:text-[100px] md:text-[120px] font-mono font-bold leading-none">
+                    <span className="chrono-giant text-5xl sm:text-[90px] font-mono font-bold leading-none">
                       {restTime?.sec}
                     </span>
                   </div>
+                  
+                  {/* Status */}
+                  <div className={`text-center mt-3 ${subTextClass}`}>
+                    {restRunning ? (
+                      <p className="text-sm sm:text-base font-semibold">
+                        {restRemaining === 0 ? '✅ Repos terminé!' : '⏳ En cours...'}
+                      </p>
+                    ) : (
+                      <p className="text-sm sm:text-base font-semibold">⏸ En pause</p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Status repos */}
-                <div className={`text-center ${subTextClass}`}>
-                  {restRunning ? (
-                    <p className="text-base sm:text-lg font-semibold">
-                      {restRemaining === 0 ? '✅ Repos terminé!' : '⏳ En cours...'}
-                    </p>
-                  ) : (
-                    <p className="text-base sm:text-lg font-semibold">⏸ En pause</p>
-                  )}
-                </div>
-
-                {/* Boutons chrono */}
-                <div className="flex gap-2 sm:gap-3 w-full max-w-xs">
+                {/* Bloc 3: Boutons contrôle chrono (uniquement Pause/Reprendre + optionnel +15s) */}
+                <div className="w-full max-w-sm space-y-2">
                   <button
                     onClick={handleToggleRest}
-                    className={`flex-1 py-2.5 sm:py-4 rounded-lg sm:rounded-xl font-semibold text-base sm:text-lg transition-colors active:scale-95 ${restRunning ? 'btn-secondary' : 'btn-primary'}`}
+                    className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-semibold text-base transition-colors active:scale-95 ${restRunning ? 'btn-secondary' : 'btn-primary'}`}
                   >
-                    {restRunning ? 'Pause' : 'Démarrer'}
+                    {restRunning ? 'Pause' : 'Reprendre'}
                   </button>
                   <button
-                    onClick={handleResetRest}
-                    className={`flex-1 py-2.5 sm:py-4 rounded-lg sm:rounded-xl font-semibold text-base sm:text-lg border-2 ${borderClass} transition-colors active:scale-95`}
+                    onClick={handleAdd15Sec}
+                    className={`w-full py-2 sm:py-3 rounded-lg font-medium text-sm border ${borderClass} hover:bg-app-secondary transition-colors active:scale-95`}
                   >
-                    Reset
+                    +15s
                   </button>
                 </div>
 
-                {/* +15 sec */}
-                <button
-                  onClick={handleAdd15Sec}
-                  className={`py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg text-xs sm:text-sm border ${borderClass} hover:bg-app-secondary transition-colors active:scale-95`}
-                >
-                  +15s
-                </button>
-
-                {/* Détails de l'exercice */}
-                <button
-                  onClick={() => setShowDetails(true)}
-                  className={`text-xs sm:text-sm ${subTextClass} hover:underline`}
-                >
-                  Voir les détails →
-                </button>
+                {/* Bloc 4: Détails techniques (repliable) */}
+                {(currentExercise.notes || showAdvancedOptions) && (
+                  <div className={`w-full max-w-sm`}>
+                    <button
+                      onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                      className={`w-full py-2 px-3 rounded-lg text-sm font-medium border ${borderClass} hover:bg-app-secondary transition-colors text-center`}
+                    >
+                      {showAdvancedOptions ? '▼ Détails & options' : '▶ Détails & options'}
+                    </button>
+                    {showAdvancedOptions && (
+                      <div className={`mt-2 ${cardBgClass} p-3 rounded-lg space-y-3`}>
+                        {currentExercise.notes && (
+                          <div>
+                            <p className={`text-xs uppercase ${subTextClass} mb-1`}>Technique</p>
+                            <p className="text-xs sm:text-sm">{currentExercise.notes}</p>
+                          </div>
+                        )}
+                        <button
+                          onClick={handleResetRest}
+                          className={`w-full py-2 rounded-lg text-xs font-medium border border-red-400 text-red-400 hover:bg-red-400 hover:bg-opacity-10 transition-colors active:scale-95`}
+                        >
+                          ⟲ Réinitialiser le chrono
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
-              // ===== VUE DÉTAILS / EXERCICE =====
-              <div className="flex-1 flex flex-col overflow-y-auto px-4 py-6 gap-6">
-                {/* Progression */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-semibold">
-                    <span className={subTextClass}>
-                      Exercice {exerciseIndex + 1}/{totalExercises}
-                    </span>
-                    <span className={subTextClass}>
+              /* ===== ÉTAT EXÉCUTION - Vue exercice à faire =====  */
+              <div className="flex-1 flex flex-col overflow-y-auto px-4 py-4 gap-4">
+                {/* Bloc 1: Exercice actuel */}
+                <div className={`${cardBgClass} border-2 border-primary rounded-lg p-3 sm:p-4 text-center space-y-1.5`}>
+                  <p className={`text-[10px] sm:text-xs uppercase tracking-wider font-bold ${subTextClass}`}>
+                    Exercice actuel
+                  </p>
+                  <h2 className="text-xl sm:text-3xl font-bold text-primary line-clamp-2">
+                    {currentExercise.exercise.name}
+                  </h2>
+                  <div className="flex flex-wrap gap-2 sm:gap-3 justify-center pt-1">
+                    <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-primary/10 text-primary border border-primary/30">
                       Série {setNumber}/{currentSetsTotal}
                     </span>
-                  </div>
-                  <div className={`w-full ${cardBgClass} rounded-full h-3`}>
-                    <div
-                      className="bg-primary h-3 rounded-full transition-all duration-300"
-                      style={{ width: `${((exerciseIndex + 1) / totalExercises) * 100}%` }}
-                    />
+                    <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border border-app/40 text-app">
+                      Exercice {exerciseIndex + 1}/{totalExercises}
+                    </span>
                   </div>
                 </div>
 
-                {/* Exercice actuel */}
-                <div className="space-y-4">
-                  <h1 className="text-3xl font-bold">
-                    {currentExercise.exercise.name}
-                  </h1>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    {currentExercise.sets !== null && (
-                      <div className={`${cardBgClass} p-3 rounded-lg text-center`}>
-                        <p className={`text-xs uppercase ${subTextClass}`}>Séries</p>
-                        <p className="text-2xl font-bold mt-1">
-                          {currentExercise.sets}
-                        </p>
-                      </div>
-                    )}
-                    {currentExercise.reps !== null && (
-                      <div className={`${cardBgClass} p-3 rounded-lg text-center`}>
-                        <p className={`text-xs uppercase ${subTextClass}`}>Reps</p>
-                        <p className="text-2xl font-bold mt-1">
-                          {currentExercise.reps === 0 ? 'max' : currentExercise.reps}
-                        </p>
-                      </div>
-                    )}
-                    {currentExercise.durationSec !== null && (
-                      <div className={`${cardBgClass} p-3 rounded-lg text-center`}>
-                        <p className={`text-xs uppercase ${subTextClass}`}>Durée</p>
-                        <p className="text-2xl font-bold mt-1">
-                          {currentExercise.durationSec}s
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {currentExercise.notes && (
-                    <div className={`${cardBgClass} p-4 rounded-lg`}>
-                      <p className={`text-xs uppercase tracking-wide ${subTextClass} mb-2`}>Notes</p>
-                      <p className={textClass}>{currentExercise.notes}</p>
+                {/* Bloc 2: Paramètres à faire */}
+                <div className="grid grid-cols-3 gap-2">
+                  {currentExercise.sets !== null && (
+                    <div className={`${cardBgClass} p-2 sm:p-3 rounded-lg text-center`}>
+                      <p className={`text-[9px] sm:text-xs uppercase ${subTextClass}`}>Séries</p>
+                      <p className="text-xl sm:text-2xl font-bold mt-1 text-primary">
+                        {currentExercise.sets}
+                      </p>
+                    </div>
+                  )}
+                  {currentExercise.reps !== null && (
+                    <div className={`${cardBgClass} p-2 sm:p-3 rounded-lg text-center`}>
+                      <p className={`text-[9px] sm:text-xs uppercase ${subTextClass}`}>Reps</p>
+                      <p className="text-xl sm:text-2xl font-bold mt-1 text-primary">
+                        {currentExercise.reps === 0 ? 'max' : currentExercise.reps}
+                      </p>
+                    </div>
+                  )}
+                  {currentExercise.durationSec !== null && (
+                    <div className={`${cardBgClass} p-2 sm:p-3 rounded-lg text-center`}>
+                      <p className={`text-[9px] sm:text-xs uppercase ${subTextClass}`}>Durée</p>
+                      <p className="text-xl sm:text-2xl font-bold mt-1 text-primary">
+                        {currentExercise.durationSec}s
+                      </p>
                     </div>
                   )}
                 </div>
 
-                {/* Chrono de repos info */}
-                {restRemaining !== null && (
-                  <div className={`${cardBgClass} p-4 rounded-lg border-l-4 border-primary`}>
-                    <p className={`text-xs uppercase ${subTextClass} mb-2`}>
-                      Temps de repos
-                    </p>
-                    <div className="flex items-end gap-2">
-                      <span className="text-3xl font-mono font-bold">
-                        {formatSeconds(restRemaining)}
-                      </span>
-                      <span className={`${subTextClass} mb-1`}>
-                        {restRunning ? '⏳' : '⏸'}
-                      </span>
-                    </div>
+                {/* Bloc 3: Notes/technique (compact) */}
+                {currentExercise.notes && (
+                  <div className={`${cardBgClass} p-3 rounded-lg`}>
+                    <p className={`text-xs uppercase tracking-wide ${subTextClass} mb-1.5`}>Technique</p>
+                    <p className="text-sm">{currentExercise.notes}</p>
                   </div>
                 )}
 
-                {/* Prochain exercice preview */}
+                {/* Bloc 4: Prochain exercice (optionnel, compact) */}
                 {exerciseIndex + 1 < totalExercises && (
-                  <div className={`${cardBgClass} p-4 rounded-lg border-l-4 border-app`}>
-                    <p className={`text-xs uppercase tracking-wide ${subTextClass} mb-3`}>
-                      Prochain exercice
+                  <div className={`${cardBgClass} p-3 rounded-lg border-l-4 border-app`}>
+                    <p className={`text-xs uppercase tracking-wide ${subTextClass} mb-2`}>
+                      À suivre
                     </p>
-                    <div className="space-y-2">
-                      <p className="font-semibold">
-                        {workout.exercises[exerciseIndex + 1].exercise.name}
-                      </p>
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        {workout.exercises[exerciseIndex + 1].sets !== null && (
-                          <span className={`bg-app-secondary px-2 py-1 rounded`}>
-                            {workout.exercises[exerciseIndex + 1].sets} séries
-                          </span>
-                        )}
-                        {workout.exercises[exerciseIndex + 1].reps !== null && (
-                          <span className={`bg-app-secondary px-2 py-1 rounded`}>
-                            {workout.exercises[exerciseIndex + 1].reps === 0
-                              ? 'reps max'
-                              : `${workout.exercises[exerciseIndex + 1].reps} reps`}
-                          </span>
-                        )}
-                        {workout.exercises[exerciseIndex + 1].durationSec !== null && (
-                          <span className={`bg-app-secondary px-2 py-1 rounded`}>
-                            {workout.exercises[exerciseIndex + 1].durationSec}s
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                    <p className="font-semibold text-sm">
+                      {workout.exercises[exerciseIndex + 1].exercise.name}
+                    </p>
                   </div>
                 )}
 
-                {/* Fermer détails */}
-                {restRemaining !== null && (
-                  <button
-                    onClick={() => setShowDetails(false)}
-                    className={`py-3 rounded-xl font-semibold text-sm border ${borderClass} transition-colors active:scale-95`}
-                  >
-                    Retour au chrono
-                  </button>
-                )}
+                {/* Espace flexible */}
+                <div className="flex-1"></div>
               </div>
             )}
 
-            {/* Footer avec contrôles */}
-            <div className={`border-t ${borderClass} px-4 py-4 space-y-2`}>
-              {/* Boutons navigation exercices */}
-              <div className="flex gap-2">
-                <button
-                  onClick={handlePrevExercise}
-                  disabled={exerciseIndex === 0}
-                  className={`flex-1 py-3 rounded-xl font-semibold border ${borderClass} transition-colors disabled:opacity-40 active:scale-95 flex items-center justify-center gap-2`}
-                >
-                  <ChevronUpIcon className="w-4 h-4" />
-                  Exercice précédent
-                </button>
-                <button
-                  onClick={handleNextExercise}
-                  disabled={exerciseIndex >= totalExercises - 1}
-                  className={`flex-1 py-3 rounded-xl font-semibold border ${borderClass} transition-colors disabled:opacity-40 active:scale-95 flex items-center justify-center gap-2`}
-                >
-                  Exercice suivant
-                  <ChevronDownIcon className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Bouton principal */}
+            {/* Footer - Contrôles principaux */}
+            <div className={`border-t ${borderClass} px-4 py-3 space-y-2`}>
+              {/* CTA principal */}
               <button
                 onClick={handleCompleteSet}
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-colors active:scale-95 btn-primary`}
               >
-                Série terminée
+                {restRemaining !== null ? 'Série suivante' : 'Série terminée'}
               </button>
+
+              {/* Navigation exercices (petit et discret) */}
+              <div className="flex gap-1 justify-center">
+                <button
+                  onClick={handlePrevExercise}
+                  disabled={exerciseIndex === 0}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${borderClass} transition-colors disabled:opacity-30 active:scale-95`}
+                >
+                  ← Précédent
+                </button>
+                <button
+                  onClick={handleNextExercise}
+                  disabled={exerciseIndex >= totalExercises - 1}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${borderClass} transition-colors disabled:opacity-30 active:scale-95`}
+                >
+                  Suivant →
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -1,4 +1,4 @@
-/* Styles pour la page ActiveWorkout - Optimisée pour street workout outdoor */
+/* Styles pour la page ActiveWorkout - Optimisée pour ergonomie en séance */
 
 /* Empêcher le zoom et la sélection sur la page de séance */
 .active-workout {
@@ -7,11 +7,10 @@
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   overscroll-behavior: contain;
-  /* Support de toutes les tailles d'écran avec viewport units */
   min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height pour mobile */
+  min-height: 100dvh;
   width: 100vw;
-  width: 100dvw; /* Dynamic viewport width pour mobile */
+  width: 100dvw;
   overflow-x: hidden;
 }
 
@@ -37,17 +36,6 @@
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-/* Thème basé sur l'attribut data-theme */
-.active-workout[data-theme="dark"] {
-  background-color: var(--bg);
-  color: var(--text);
-}
-
-.active-workout[data-theme="light"] {
-  background-color: var(--bg);
-  color: var(--text);
 }
 
 /* Animation du chrono géant avec pulsation subtle */
@@ -77,54 +65,26 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Optimisation pour landscape ou petit écran (dehors) */
+/* Optimisation pour landscape ou petit écran */
 @media (max-height: 500px) {
   .chrono-giant {
-    font-size: 3rem !important;
-  }
-
-  .header-minimal {
-    padding: 0.5rem 1rem;
-  }
-
-  .footer-controls {
-    padding: 0.75rem;
+    font-size: 2.5rem !important;
   }
 }
 
-/* Responsivité améliorée pour tous les écrans */
 @media (max-width: 360px) {
   .chrono-giant {
-    font-size: 3.5rem !important;
+    font-size: 2.5rem !important;
   }
 }
 
-@media (min-width: 361px) and (max-width: 414px) {
+@media (max-width: 280px) {
   .chrono-giant {
-    font-size: 4.5rem !important;
+    font-size: 1.75rem !important;
   }
 }
 
-@media (min-width: 768px) {
-  .chrono-giant {
-    font-size: 7rem !important;
-  }
-}
-
-/* Support des écrans ultra-larges */
-@media (min-width: 1024px) {
-  .chrono-giant {
-    font-size: 8rem !important;
-  }
-}
-
-/* Améliorer le contraste */
-.high-contrast-mode {
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-/* Gestes tactiles améliorés pour les doigts (dehors, potentiellement avec des gants) */
+/* Gestes tactiles améliorés */
 button {
   -webkit-tap-highlight-color: transparent;
   transition: transform 50ms ease-out, background-color 150ms ease-out;
@@ -142,15 +102,6 @@ button:active {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Zone tactile large pour les boutons principaux (au moins 48x48 pour une bonne utilisabilité) */
-.large-touch-target {
-  min-height: 48px;
-  min-width: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 /* Éviter le zoom accidentel lors de la saisie */
 input,
 button,
@@ -159,27 +110,21 @@ textarea {
   font-size: 16px;
 }
 
-/* Smooth scroll pour les détails */
+/* Smooth scroll */
 .details-scroll {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Améliorations pour les animations fluides */
+/* Améliorations globales */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Optimiser le rendu des icônes */
 svg {
   flex-shrink: 0;
   backface-visibility: hidden;
-}
-
-/* Section principale du chrono */
-.chrono-section {
-  perspective: 1000px;
 }
 
 /* Boutons avec meilleure accessibilité */
@@ -187,43 +132,10 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button:not(:disabled):hover {
-  text-decoration: none;
-}
-
-/* Vibration haptique (quelques appareils supportent) */
-@supports (animation-play-state: paused) {
-  .haptic {
-    -webkit-appearance: none;
-    appearance: none;
-  }
-}
-
 /* Portrait vs Landscape */
-@media (orientation: portrait) {
-  .active-workout {
-    max-height: 100vh;
-    max-height: 100dvh;
-  }
-}
-
 @media (orientation: landscape) {
   .chrono-giant {
-    font-size: 3rem !important;
-  }
-
-  .header-minimal {
-    padding: 0.25rem 0.5rem;
-  }
-
-  .footer-controls {
-    padding: 0.5rem;
-  }
-  
-  /* Adapter la hauteur du contenu en paysage */
-  .active-workout {
-    height: 100vh;
-    height: 100dvh;
+    font-size: 2rem !important;
   }
 }
 
