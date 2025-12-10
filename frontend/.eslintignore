@@ -1,0 +1,9 @@
+dist
+dev-dist
+node_modules
+*.config.js
+*.config.ts
+build
+coverage
+.vscode
+.idea
