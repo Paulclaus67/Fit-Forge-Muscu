@@ -5,6 +5,7 @@ services:
     image: fit-forge-muscu-backend
     build:
       context: ./backend
+      dockerfile: Dockerfile.prod
     container_name: muscu-pwa-backend
     env_file:
       - .env
@@ -18,6 +19,7 @@ services:
     image: fit-forge-muscu-frontend
     build:
       context: ./frontend
+      dockerfile: Dockerfile.prod
     container_name: muscu-pwa-frontend
     env_file:
       - .env
