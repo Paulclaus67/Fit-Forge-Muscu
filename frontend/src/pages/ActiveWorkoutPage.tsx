@@ -331,7 +331,7 @@ const ActiveWorkoutPage: React.FC = () => {
           className={`summary-page w-full ${bgClass} ${textClass}`}
         >
           {/* Header */}
-          <div className={`flex items-center justify-between px-4 py-3 border-b ${borderClass}`}>
+          <div className={`flex items-center justify-between px-4 py-3 border-b ${borderClass} relative`}>
             <button
               onClick={handleQuitSession}
               className="p-2 hover:bg-app-secondary rounded-lg transition-colors"
@@ -340,6 +340,14 @@ const ActiveWorkoutPage: React.FC = () => {
               <XMarkIcon className="w-6 h-6 text-red-400" />
             </button>
             <h1 className="text-lg font-bold flex-1 text-center">{workout.name}</h1>
+            
+            {/* Macaron DEV */}
+            {import.meta.env.MODE === 'development' && (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-red-700">DEV</span>
+              </div>
+            )}
+            
             <ThemeSwitcher size="sm" />
           </div>
 
@@ -584,7 +592,7 @@ const ActiveWorkoutPage: React.FC = () => {
         data-theme={isDarkMode ? 'dark' : 'light'}
       >
         {/* Header minimaliste */}
-        <div className={`flex items-center justify-between px-4 py-3 border-b ${borderClass}`}>
+        <div className={`flex items-center justify-between px-4 py-3 border-b ${borderClass} relative`}>
           <div className="flex gap-2">
             <button
               onClick={handleQuitSession}
@@ -610,6 +618,13 @@ const ActiveWorkoutPage: React.FC = () => {
               ⏱ {formatSeconds(elapsedSeconds)}
             </p>
           </div>
+
+          {/* Macaron DEV */}
+          {import.meta.env.MODE === 'development' && (
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+              <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-red-700">DEV</span>
+            </div>
+          )}
 
           <ThemeSwitcher size="sm" />
         </div>

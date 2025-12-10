@@ -205,10 +205,10 @@ const WeeklyPlanPage: React.FC = () => {
         </div>
 
         {/* Sélecteur de jours en pills */}
-        <div className="sticky top-4 z-10 backdrop-blur">
+        <div className="z-10 backdrop-blur">
           <div className="flex items-center gap-2 text-[11px] text-app-secondary mb-2 px-1">
             <CalendarDaysIcon className="w-4 h-4" />
-            <span>Ta semaine en un coup d’œil</span>
+            <span>Ta semaine en un coup d'œil</span>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-3 px-1 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
             {dayOrder.map((day) => {
