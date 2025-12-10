@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/Layout';
-import { Card } from '../components/ui/Card';
 import { PrimaryButton } from '../components/ui/PrimaryButton';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -135,6 +134,12 @@ const DashboardPage: React.FC = () => {
     return todayItems.find((it) => it.workout != null) || null;
   }, [todayItems]);
 
+  const activeWorkoutName = useMemo(() => {
+    if (!activeSession || !plan) return null;
+    const found = plan.items.find((it) => it.workout?.id === activeSession.workoutId);
+    return found?.workout?.name ?? null;
+  }, [activeSession, plan]);
+
   const weekSummary = useMemo<Record<DayOfWeek, WeeklyPlanItem[]>>(() => {
     const grouped: Record<DayOfWeek, WeeklyPlanItem[]> = {
       MONDAY: [],
@@ -157,89 +162,80 @@ const DashboardPage: React.FC = () => {
   const todayLabel = dayLabelLong[today];
   const activeWorkoutId = activeSession?.workoutId ?? null;
   const totalWeekItems = plan?.items.length ?? 0;
+  const hasTodayContent = todayItems.length > 0;
 
   return (
     <Layout>
       <div className="space-y-5 text-app">
-        {/* Hero */}
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-app-secondary to-app p-5 shadow-2xl border border-app">
-          <div className="absolute inset-0 pointer-events-none" aria-hidden />
-          <div className="relative flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3 flex-1">
-                {/* Photo de profil */}
-                <Link to="/profile" className="flex-shrink-0">
-                  {user?.profilePicture ? (
-                    <img
-                      src={user.profilePicture}
-                      alt="Photo de profil"
-                      className="w-16 h-16 rounded-full object-cover border-2 border-primary/30 shadow-lg hover:border-primary transition-colors"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-full bg-app-secondary border-2 border-primary/30 flex items-center justify-center shadow-lg hover:border-primary transition-colors">
-                      <svg className="w-8 h-8 text-app-secondary" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-                </Link>
-
-                <div className="space-y-1 flex-1">
-                  <p className="text-xs font-semibold text-primary bg-app-secondary/70 inline-flex items-center px-2.5 py-1 rounded-full border border-primary/30">
-                    {todayDateText}
-                  </p>
-                  <div>
-                    <p className="text-sm text-app-secondary">{user ? `Salut ${user.username} 👋` : 'Salut 👋'}</p>
-                    <h1 className="text-2xl font-bold text-app">Ta page d'accueil</h1>
-                    <p className="text-sm text-app-secondary">{hasPlan ? 'Planning prêt · focus sur la séance du jour' : 'Aucun planning actif · choisis ou crée ta séance'}</p>
+        {/* Hero : carte de la séance du jour */}
+        <section className="rounded-3xl border border-app bg-gradient-to-br from-primary/20 via-app-secondary to-app p-5 shadow-xl">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3 flex-1">
+              <Link to="/profile" className="flex-shrink-0">
+                {user?.profilePicture ? (
+                  <img
+                    src={user.profilePicture}
+                    alt="Photo de profil"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-primary/30 shadow-lg"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-app-secondary border-2 border-primary/30 flex items-center justify-center shadow-lg">
+                    <svg className="w-7 h-7 text-app-secondary" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
                   </div>
-                </div>
-              </div>
-              {activeWorkoutId && (
-                <span className="px-3 py-1 text-[11px] rounded-full border border-primary bg-app text-primary font-semibold shadow-inner">
-                  Séance en cours
-                </span>
-              )}
-            </div>
+                )}
+              </Link>
 
-            <div className="flex flex-wrap gap-2">
-              {activeWorkoutId && (
-                <PrimaryButton as="link" to={`/workouts/${activeWorkoutId}/play`}>
-                  Reprendre ma séance
-                </PrimaryButton>
-              )}
-
-              {!activeWorkoutId && todayMainWorkout?.workout && (
-                <PrimaryButton as="link" to={`/workouts/${todayMainWorkout.workout.id}/play`}>
-                  Démarrer {todayMainWorkout.workout.name}
-                </PrimaryButton>
-              )}
-
-              {!activeWorkoutId && !todayMainWorkout?.workout && (
-                <PrimaryButton as="link" to="/workouts">
-                  Choisir une séance
-                </PrimaryButton>
-              )}
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="px-3 py-2 rounded-xl bg-app text-app border border-app shadow-inner">
-                <p className="text-[10px] uppercase tracking-wide text-app-secondary">Aujourd’hui</p>
-                <p className="text-sm font-semibold">{todayItems.length} bloc{todayItems.length > 1 ? 's' : ''}</p>
-              </div>
-              <div className="px-3 py-2 rounded-xl bg-app-secondary/80 border border-app">
-                <p className="text-[10px] uppercase tracking-wide text-app-secondary">Planning</p>
-                <p className="text-sm font-semibold">{hasPlan ? 'Actif' : 'À configurer'}</p>
-              </div>
-              <div className="px-3 py-2 rounded-xl bg-app-secondary/80 border border-app">
-                <p className="text-[10px] uppercase tracking-wide text-app-secondary">Semaine</p>
-                <p className="text-sm font-semibold">{totalWeekItems} élément{totalWeekItems > 1 ? 's' : ''}</p>
+              <div className="space-y-1 flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-primary bg-app-secondary/70 inline-flex items-center px-2.5 py-1 rounded-full border border-primary/30">
+                  {todayDateText}
+                </p>
+                <p className="text-sm text-app-secondary">{user ? `Salut ${user.username} 👋` : 'Salut 👋'}</p>
+                <h1 className="text-xl font-bold text-app truncate">
+                  {activeWorkoutId ? `Reprendre : ${activeWorkoutName ?? 'ta séance'}` : todayMainWorkout?.workout ? `Séance du jour : ${todayMainWorkout.workout.name}` : 'Aucune séance prévue'}
+                </h1>
+                <p className="text-sm text-app-secondary">
+                  {hasPlan
+                    ? `Planning prêt · ${todayItems.length} bloc${todayItems.length > 1 ? 's' : ''} aujourd’hui`
+                    : 'Aucun planning actif · choisis ou crée ta séance'}
+                </p>
               </div>
             </div>
+
+            {activeWorkoutId && (
+              <span className="px-3 py-1 text-[11px] rounded-full border border-primary bg-app text-primary font-semibold shadow-inner">
+                Séance en cours
+              </span>
+            )}
           </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {activeWorkoutId && (
+              <PrimaryButton as="link" to={`/workouts/${activeWorkoutId}/play`}>
+                Reprendre ma séance
+              </PrimaryButton>
+            )}
+
+            {!activeWorkoutId && todayMainWorkout?.workout && (
+              <PrimaryButton as="link" to={`/workouts/${todayMainWorkout.workout.id}/play`}>
+                Démarrer {todayMainWorkout.workout.name}
+              </PrimaryButton>
+            )}
+
+            {!activeWorkoutId && !todayMainWorkout?.workout && (
+              <PrimaryButton as="link" to="/workouts">
+                Choisir une séance
+              </PrimaryButton>
+            )}
+          </div>
+
+          <p className="mt-3 text-[12px] text-app-secondary">
+            Aujourd’hui : {todayItems.length} bloc{todayItems.length > 1 ? 's' : ''} · {hasPlan ? 'Planning actif' : 'Planning à configurer'} · Semaine : {totalWeekItems} élément{totalWeekItems > 1 ? 's' : ''}
+          </p>
         </section>
 
-        {/* Carte : Séance du jour */}
+        {/* Aujourd’hui : résumé des blocs */}
         <section className="bg-app-secondary border border-app rounded-2xl p-4 space-y-3 shadow-sm">
           <div className="flex justify-between items-center">
             <div>
@@ -256,9 +252,7 @@ const DashboardPage: React.FC = () => {
 
           {!hasPlan && (
             <div className="bg-app border border-app rounded-xl p-4 text-center">
-              <p className="text-xs text-app-secondary mb-2">
-                Aucun planning configuré.
-              </p>
+              <p className="text-xs text-app-secondary mb-2">Aucun planning configuré.</p>
               <Link
                 to="/weekly-plan"
                 className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-90 font-medium transition-colors"
@@ -270,58 +264,46 @@ const DashboardPage: React.FC = () => {
 
           {hasPlan && (
             <>
-              {todayItems.length === 0 ? (
+              {!hasTodayContent ? (
                 <div className="bg-app border border-app rounded-xl p-4 text-center">
                   <span className="text-xl mb-2 block">🏖️</span>
                   <p className="text-xs font-medium text-app-secondary">Jour de repos</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {todayItems.map((item, idx) => {
-                    return (
-                      <div
-                        key={item.id}
-                        className="p-3 rounded-xl border border-app bg-app flex gap-3 items-start"
-                      >
-                        <div className="flex flex-col items-center">
-                          <div className="w-2 h-2 rounded-full bg-primary" />
-                          {idx < todayItems.length - 1 && (
-                            <div className="flex-1 w-px bg-app-secondary/60 mt-1" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-semibold text-app-secondary">#{idx + 1}</span>
-                            <h2 className="text-sm font-semibold text-app truncate">{item.label}</h2>
-                            {item.isOptional && (
-                              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-app-secondary border border-app text-app-secondary">
-                                Opt.
-                              </span>
-                            )}
-                          </div>
-                          {item.workout && (
-                            <p className="text-xs text-app-secondary mt-1 truncate">{item.workout.name}</p>
-                          )}
-                        </div>
-                        {item.workout && !activeWorkoutId && (
-                          <Link
-                            to={`/workouts/${item.workout.id}/play`}
-                            className="flex-shrink-0 px-3 py-1.5 btn-primary rounded-lg text-xs font-semibold transition-all"
-                          >
-                            Lancer
-                          </Link>
+                  {todayItems.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className="p-3 rounded-xl border border-app bg-app flex gap-3 items-start"
+                    >
+                      <div className="flex flex-col items-center">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        {idx < todayItems.length - 1 && (
+                          <div className="flex-1 w-px bg-app-secondary/60 mt-1" />
                         )}
                       </div>
-                    );
-                  })}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-semibold text-app-secondary">#{idx + 1}</span>
+                          <h2 className="text-sm font-semibold text-app truncate">{item.label}</h2>
+                          {item.isOptional && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-app-secondary border border-app text-app-secondary">Opt.</span>
+                          )}
+                        </div>
+                        {item.workout && (
+                          <p className="text-xs text-app-secondary mt-1 truncate">{item.workout.name}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </>
           )}
         </section>
 
-        {/* Récap semaine */}
-        <Card className="space-y-3 text-xs">
+        {/* Cette semaine : vue synthétique */}
+        <section className="rounded-2xl border border-app bg-app-secondary p-4 shadow-sm text-xs space-y-3">
           <div className="flex justify-between items-center mb-1">
             <h2 className="text-sm font-semibold text-app">Cette semaine</h2>
             <Link to="/weekly-plan" className="text-[11px] text-primary hover:underline">Gérer le planning</Link>
@@ -330,30 +312,26 @@ const DashboardPage: React.FC = () => {
           {!hasPlan && <p className="text-app-secondary">Aucune semaine configurée pour l'instant.</p>}
 
           {hasPlan && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="space-y-1 divide-y divide-app/60">
               {orderedDays.map((day) => {
                 const items = weekSummary[day];
                 const hasWorkout = items.some((it) => it.workout);
                 const isToday = day === today;
+                const label = items.length === 0 ? 'Repos' : items.map((it) => (it.workout ? it.workout.name : it.label)).join(' · ');
+
                 return (
-                  <div
-                    key={day}
-                    className={`min-w-[120px] rounded-xl border px-3 py-2 bg-app-secondary ${isToday ? 'border-primary shadow-sm' : 'border-app'}`}
-                  >
-                    <div className={`text-[11px] font-semibold ${isToday ? 'text-primary' : 'text-app'}`}>
-                      {dayLabelShort[day]}
-                    </div>
-                    <div className="text-[11px] text-app-secondary mt-1 line-clamp-2">
-                      {items.length === 0 && 'Repos'}
-                      {items.length > 0 && items.map((it) => (it.workout ? it.workout.name : it.label)).join(' · ')}
-                    </div>
-                    <div className={`mt-2 w-2 h-2 rounded-full ${hasWorkout ? 'bg-primary' : 'bg-app-secondary border border-app'}`} />
+                  <div key={day} className="flex items-center justify-between py-1.5">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className={`text-[12px] font-semibold ${isToday ? 'text-primary' : 'text-app'}`}>{dayLabelShort[day]}</span>
+                      <span className="text-[12px] text-app-secondary truncate">{label}</span>
+                    </span>
+                    <span className={`h-2.5 w-2.5 rounded-full ${hasWorkout ? 'bg-primary' : 'bg-app-secondary border border-app'}`} aria-hidden />
                   </div>
                 );
               })}
             </div>
           )}
-        </Card>
+        </section>
 
         {loading && <p className="text-xs text-app-secondary">Chargement...</p>}
         {error && <p className="text-xs text-red-600">Erreur: {error}</p>}

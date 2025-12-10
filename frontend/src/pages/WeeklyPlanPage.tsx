@@ -17,12 +17,9 @@ import {
 import type { Workout } from '../api/workouts';
 import { useAuth } from '../context/AuthContext';
 import {
-  MagnifyingGlassIcon,
   PlayIcon,
   CalendarDaysIcon,
-  SparklesIcon,
   FireIcon,
-  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 
 const dayLabel: Record<DayOfWeek, string> = {
@@ -51,11 +48,21 @@ const WeeklyPlanPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [savingItemId, setSavingItemId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
   const [activeDay, setActiveDay] = useState<DayOfWeek>('MONDAY');
 
   const [templates, setTemplates] = useState<Workout[]>([]);
   const [mine, setMine] = useState<Workout[]>([]);
+
+  const today = useMemo<DayOfWeek>(() => {
+    const jsDay = new Date().getDay();
+    if (jsDay === 0) return 'SUNDAY';
+    if (jsDay === 1) return 'MONDAY';
+    if (jsDay === 2) return 'TUESDAY';
+    if (jsDay === 3) return 'WEDNESDAY';
+    if (jsDay === 4) return 'THURSDAY';
+    if (jsDay === 5) return 'FRIDAY';
+    return 'SATURDAY';
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -106,17 +113,8 @@ const WeeklyPlanPage: React.FC = () => {
     for (const day of dayOrder) {
       grouped[day].sort((a, b) => a.order - b.order);
     }
-    // Filter by query on label
-    const q = query.trim().toLowerCase();
-    if (q) {
-      for (const d of dayOrder) {
-        grouped[d] = grouped[d].filter((it) =>
-          it.label.toLowerCase().includes(q)
-        );
-      }
-    }
     return grouped;
-  }, [plan, query]);
+  }, [plan]);
 
   const warmupsByDay = useMemo(() => {
     if (!plan) return {} as Record<DayOfWeek, WeeklyPlanItem[]>;
@@ -139,15 +137,8 @@ const WeeklyPlanPage: React.FC = () => {
     for (const day of dayOrder) {
       grouped[day].sort((a, b) => a.order - b.order);
     }
-    // Apply query filter
-    const q = query.trim().toLowerCase();
-    if (q) {
-      for (const d of dayOrder) {
-        grouped[d] = grouped[d].filter((it) => it.label.toLowerCase().includes(q));
-      }
-    }
     return grouped;
-  }, [plan, query]);
+  }, [plan]);
 
   const handleChangeWorkout = async (itemId: number, value: string) => {
     if (!token || !plan) return;
@@ -178,237 +169,192 @@ const WeeklyPlanPage: React.FC = () => {
     }
   };
 
+  const activeMain = itemsByDay[activeDay] ?? [];
+  const activeWarmups = warmupsByDay[activeDay] ?? [];
+
+  const weeklySummary = useMemo(
+    () =>
+      dayOrder.map((day) => {
+        const mainLabel = itemsByDay[day]?.[0]?.label ?? null;
+        const warmupLabel = warmupsByDay[day]?.[0]?.label ?? null;
+        const label = mainLabel || warmupLabel || 'Repos';
+        const hasContent = (itemsByDay[day]?.length ?? 0) + (warmupsByDay[day]?.length ?? 0) > 0;
+
+        return {
+          day,
+          label,
+          hasContent,
+        };
+      }),
+    [itemsByDay, warmupsByDay]
+  );
+
   return (
     <Layout>
-      {/* Hero Header */}
-      <div className="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-app-secondary to-app p-4 shadow-xl border border-app/80">
-        <div className="absolute inset-0 pointer-events-none" aria-hidden />
-        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1.5">
-            <p className="inline-flex items-center gap-2 text-[11px] font-semibold text-primary bg-app-secondary/70 px-2.5 py-1 rounded-full border border-primary/30">
-              <SparklesIcon className="w-4 h-4" />
-              Planning mobile
-            </p>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-app">Planning Hebdomadaire</h1>
-              <span className="text-[11px] px-2 py-1 rounded-full border border-app text-app-secondary bg-app/70">vue compacte</span>
+      <div className="space-y-6">
+        {/* Header allégé */}
+        <div className="rounded-2xl border border-app bg-app-secondary/70 p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-app-secondary">Planning hebdo</p>
+              <h1 className="text-xl font-semibold text-app">Vue mobile · 7 jours</h1>
+              <p className="text-sm text-app-secondary">Voir ta semaine et lancer la séance du jour sans scroll.</p>
             </div>
-            <p className="text-xs text-app-secondary">Accède vite à l’info, moins de scroll.</p>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-app-secondary">
-            <span className="px-3 py-2 rounded-lg border border-app bg-app text-app font-semibold shadow-inner">7 jours</span>
-            <span className="px-3 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary font-semibold flex items-center gap-1">
-              <FireIcon className="w-4 h-4" /> routine complète
-            </span>
+            <span className="px-3 py-1 rounded-full border border-app text-[11px] text-app bg-app shadow-inner">Hebdo</span>
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative mt-4 group">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 blur pointer-events-none" />
-          <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary transition-colors duration-200 group-focus-within:text-primary" />
-          <input
-            className="w-full pl-12 pr-4 py-3 bg-gradient-to-br from-app-secondary/80 to-app-secondary/60 border border-app/60 rounded-2xl text-sm text-app placeholder-app-secondary/70 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-all backdrop-blur-sm shadow-lg hover:border-primary/30 hover:bg-gradient-to-br hover:from-app-secondary hover:to-app-secondary/70"
-            placeholder="Rechercher une séance..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Day Tabs */}
-      <div className="mb-4 space-y-2 sticky top-4 z-10 backdrop-blur">
-        <div className="flex items-center justify-between px-1 text-[11px] text-app-secondary">
-          <div className="flex items-center gap-2">
+        {/* Sélecteur de jours en pills */}
+        <div className="sticky top-4 z-10 backdrop-blur">
+          <div className="flex items-center gap-2 text-[11px] text-app-secondary mb-2 px-1">
             <CalendarDaysIcon className="w-4 h-4" />
-            <span>Vue planning rapide</span>
+            <span>Ta semaine en un coup d’œil</span>
           </div>
-          <span className="px-2 py-1 rounded-full border border-app text-app-secondary bg-app-secondary/70">
-            {(plan?.items.length ?? 0)} créneau{(plan?.items.length ?? 0) > 1 ? 'x' : ''}
-          </span>
-        </div>
+          <div className="flex gap-2 overflow-x-auto pb-3 px-1 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+            {dayOrder.map((day) => {
+              const hasContent = (itemsByDay[day]?.length ?? 0) + (warmupsByDay[day]?.length ?? 0) > 0;
+              const isActive = activeDay === day;
+              const isToday = day === today;
 
-        <div className="flex gap-2 overflow-x-auto pb-3 pt-1 px-2 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
-          {dayOrder.map((day) => {
-            const mainCount = itemsByDay[day]?.length ?? 0;
-            const warmupCount = warmupsByDay[day]?.length ?? 0;
-
-            return (
-              <button
-                key={`tab-${day}`}
-                onClick={() => setActiveDay(day)}
-                className={`min-w-[120px] shrink-0 rounded-2xl border px-3 py-3 text-left transition-all duration-300 shadow-sm group/day ${
-                  activeDay === day
-                    ? 'bg-gradient-to-br from-primary/95 to-primary/80 text-app border-primary shadow-lg shadow-primary/40'
-                    : 'bg-gradient-to-br from-app-secondary/70 to-app-secondary/50 border-app/70 text-app hover:border-primary/50 hover:shadow-md hover:from-app-secondary/80 hover:to-app-secondary/60'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className={`text-sm font-bold leading-tight transition-colors ${activeDay === day ? 'text-app' : 'text-app group-hover/day:text-primary'}`}>{dayLabel[day]}</div>
-                  <ChevronRightIcon className={`w-4 h-4 transition-transform ${activeDay === day ? 'rotate-90' : ''}`} />
-                </div>
-                <div className="mt-2 flex items-center gap-1.5 text-[10px] flex-wrap">
-                  <span className={`px-2.5 py-1 rounded-full border font-medium ${
-                    activeDay === day
-                      ? 'border-app/30 bg-app/25 text-app'
-                      : 'border-app/50 text-app-secondary bg-app/10 group-hover/day:border-primary/30 group-hover/day:text-primary group-hover/day:bg-primary/5'
-                  }`}>{mainCount} séance{mainCount > 1 ? 's' : ''}</span>
-                  {warmupCount > 0 && (
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] flex items-center gap-1 font-medium border ${
-                      activeDay === day ? 'bg-app/25 text-app border-app/30' : 'bg-primary/10 text-primary border-primary/40 group-hover/day:border-primary/60'
-                    }`}>
-                      <FireIcon className="w-3 h-3" />
-                      {warmupCount}
-                    </span>
+              return (
+                <button
+                  key={`tab-${day}`}
+                  onClick={() => setActiveDay(day)}
+                  className={`relative shrink-0 rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-200 shadow-sm min-w-[72px] ${
+                    isActive
+                      ? 'bg-primary text-app border-primary shadow-primary/30'
+                      : 'bg-app-secondary/70 text-app border-app hover:border-primary/50 hover:text-primary'
+                  } ${isToday && !isActive ? 'ring-1 ring-primary/50' : ''}`}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span>{dayLabel[day].slice(0, 3)}</span>
+                    <span className={`h-2 w-2 rounded-full ${hasContent ? 'bg-primary' : 'bg-app-secondary'}`} aria-hidden />
+                  </span>
+                  {isToday && isActive && (
+                    <span className="absolute -top-2 right-2 text-[10px] rounded-full bg-app text-app-secondary px-2 py-0.5 border border-primary/40">Aujourd’hui</span>
                   )}
-                </div>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-app-secondary border border-app rounded-xl p-4 animate-pulse">
-              <div className="h-4 bg-app-secondary rounded mb-2"></div>
-              <div className="h-3 bg-app-secondary rounded w-3/4"></div>
-            </div>
-          ))}
-        </div>
-      )}
+        {/* Loading State */}
+        {loading && (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-app-secondary border border-app rounded-xl p-4 animate-pulse">
+                <div className="h-4 bg-app-secondary rounded mb-2"></div>
+                <div className="h-3 bg-app-secondary rounded w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        )}
 
-      {/* Error State */}
-      {error && (
-        <div className="bg-red-100/50 border border-red-300 rounded-xl p-4">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-      )}
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-100/50 border border-red-300 rounded-xl p-4">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
 
-      {/* Content */}
-      {plan && !loading && (
-        <div className="space-y-6">
-          {dayOrder.map((day) => (
-            <section
-              key={day}
-              className={`${activeDay === day ? '' : 'hidden'} transition-all duration-200`}
-            >
-              <div className="mb-3 flex items-center justify-between gap-3 bg-app-secondary/70 border border-app rounded-xl p-3 shadow-sm backdrop-blur">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-app-secondary">{dayLabel[day]}</p>
-                  <h2 className="text-base font-semibold text-app mt-0.5">Ton programme du jour</h2>
+        {/* Content */}
+        {plan && !loading && (
+          <>
+            <section className="rounded-2xl border border-app bg-app-secondary/70 p-4 shadow-sm space-y-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1">
+                  <p className="text-[11px] uppercase tracking-[0.12em] text-app-secondary">{dayLabel[activeDay]}</p>
+                  <h2 className="text-lg font-semibold text-app">Programme du jour</h2>
                   <p className="text-xs text-app-secondary">
-                    {itemsByDay[day].length === 0 && warmupsByDay[day].length === 0
-                      ? 'Aucune séance prévue ce jour'
-                      : `${itemsByDay[day].length} séance${itemsByDay[day].length > 1 ? 's' : ''} programmée${itemsByDay[day].length > 1 ? 's' : ''}`}
+                    {activeMain.length === 0 && activeWarmups.length === 0
+                      ? 'Rien de prévu pour ce jour. Tu peux associer une séance.'
+                      : `${activeMain.length} séance${activeMain.length > 1 ? 's' : ''} · ${activeWarmups.length} échauffement${activeWarmups.length > 1 ? 's' : ''}`}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-app-secondary">
-                  <span className="px-2.5 py-1.5 rounded-lg border border-app bg-app text-app font-semibold shadow-inner">
-                    {itemsByDay[day].length + warmupsByDay[day].length} bloc{(itemsByDay[day].length + warmupsByDay[day].length) > 1 ? 's' : ''}
-                  </span>
-                </div>
+                {activeDay === today && (
+                  <span className="px-2 py-1 rounded-full border border-primary/50 text-[11px] text-primary bg-primary/10">Aujourd’hui</span>
+                )}
               </div>
 
-              {/* Warmups Section */}
-              {warmupsByDay[day].length > 0 && (
-                <div className="mb-3 bg-app-secondary/70 border border-primary/40 rounded-xl p-3 shadow-sm backdrop-blur">
-                  <h3 className="text-xs font-semibold text-primary mb-2 flex items-center gap-2">
-                    <FireIcon className="w-4 h-4" />
-                    Échauffements
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {warmupsByDay[day].map((wu) => (
-                      <span
-                        key={`wu-${wu.id}`}
-                        className="px-2.5 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-[11px] text-primary font-semibold"
-                      >
-                        {wu.label}
-                      </span>
-                    ))}
-                  </div>
+              {activeWarmups.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {activeWarmups.map((wu) => (
+                    <span
+                      key={`wu-${wu.id}`}
+                      className="px-2.5 py-1.5 rounded-full border border-primary/40 bg-primary/10 text-[11px] text-primary font-semibold"
+                    >
+                      <FireIcon className="w-3 h-3 inline" /> {wu.label}
+                    </span>
+                  ))}
                 </div>
               )}
 
-              {/* Main Workouts */}
-              {itemsByDay[day].length === 0 && warmupsByDay[day].length === 0 ? (
-                <div className="text-center py-8 px-4 bg-app-secondary/70 border border-app rounded-xl shadow-inner backdrop-blur">
+              {activeMain.length === 0 && activeWarmups.length === 0 ? (
+                <div className="text-center py-8 px-4 bg-app/60 border border-app rounded-xl shadow-inner">
                   <div className="w-12 h-12 bg-app text-app rounded-full flex items-center justify-center mx-auto mb-2 shadow">
                     <CalendarDaysIcon className="w-7 h-7" />
                   </div>
-                  <p className="text-app font-semibold">Jour off</p>
-                  <p className="text-xs text-app-secondary">Profite du repos ou ajoute une séance.</p>
+                  <p className="text-app font-semibold">Jour de repos</p>
+                  <p className="text-xs text-app-secondary">Associe une séance ou laisse ce jour off.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {itemsByDay[day].map((item) => (
-                    <div
-                      key={item.id}
-                      className="group relative bg-app-secondary/80 border border-app rounded-xl p-3 hover:border-primary/60 transition-all duration-200 shadow-sm hover:shadow-lg backdrop-blur"
-                    >
-                      <div className="absolute inset-y-3 left-0 w-1 rounded-full bg-primary/80" aria-hidden />
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <h3 className="text-base font-semibold text-app mb-1 flex items-center gap-2">
+                <div className="space-y-3">
+                  {activeMain.map((item) => (
+                    <div key={item.id} className="rounded-xl border border-app bg-app p-3 shadow-sm">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-1">
+                          <h3 className="text-base font-semibold text-app flex items-center gap-2">
                             {item.label}
                             {item.isOptional && (
-                              <span className="ml-2 text-xs px-2 py-1 rounded-full border border-app text-app-secondary">
-                                Facultatif
-                              </span>
+                              <span className="text-[11px] px-2 py-0.5 rounded-full border border-app text-app-secondary">Facultatif</span>
                             )}
                           </h3>
                           <p className="text-[11px] text-app-secondary">
-                            {item.workout ? `Séance: ${item.workout.name}` : 'Associe une séance pour ce créneau'}
+                            {item.workout ? `Séance associée : ${item.workout.name}` : 'Pas de séance associée pour ce créneau'}
                           </p>
                         </div>
                       </div>
 
-                      <div className="space-y-2.5">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                          <label className="text-[11px] font-medium text-app-secondary sm:w-32">Séance associée</label>
-                          <select
-                            className="w-full px-3 py-2.5 bg-app border border-app rounded-lg text-sm text-app focus:outline-none focus:ring-2 focus:ring-primary transition-all disabled:opacity-50 shadow-inner"
-                            value={item.workout?.id ?? ''}
-                            onChange={(e) => handleChangeWorkout(item.id, e.target.value)}
-                            disabled={savingItemId === item.id}
-                          >
-                            <option value="">Aucune séance</option>
+                      <div className="mt-3 space-y-2">
+                        <label className="text-[11px] font-medium text-app-secondary block">Séance associée</label>
+                        <select
+                          className="w-full px-3 py-2 bg-app-secondary/60 border border-app rounded-lg text-sm text-app focus:outline-none focus:ring-2 focus:ring-primary transition-all disabled:opacity-50"
+                          value={item.workout?.id ?? ''}
+                          onChange={(e) => handleChangeWorkout(item.id, e.target.value)}
+                          disabled={savingItemId === item.id}
+                        >
+                          <option value="">Aucune séance</option>
 
-                            {templates.length > 0 && (
-                              <optgroup label="Séances classiques">
-                                {templates.map((w) => (
-                                  <option key={`t-${w.id}`} value={w.id}>
-                                    {w.name}
-                                  </option>
-                                ))}
-                              </optgroup>
-                            )}
+                          {templates.length > 0 && (
+                            <optgroup label="Séances classiques">
+                              {templates.map((w) => (
+                                <option key={`t-${w.id}`} value={w.id}>
+                                  {w.name}
+                                </option>
+                              ))}
+                            </optgroup>
+                          )}
 
-                            {mine.length > 0 && (
-                              <optgroup label="Mes séances personnelles">
-                                {mine.map((w) => (
-                                  <option key={`m-${w.id}`} value={w.id}>
-                                    {w.name}
-                                  </option>
-                                ))}
-                              </optgroup>
-                            )}
-                          </select>
-                        </div>
+                          {mine.length > 0 && (
+                            <optgroup label="Mes séances personnelles">
+                              {mine.map((w) => (
+                                <option key={`m-${w.id}`} value={w.id}>
+                                  {w.name}
+                                </option>
+                              ))}
+                            </optgroup>
+                          )}
+                        </select>
 
                         {item.workout && (
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <button
-                              onClick={() => window.location.href = `/workouts/${item.workout!.id}/play`}
-                              className="w-full sm:w-auto flex items-center justify-center gap-2 btn-primary px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors shadow-md"
-                            >
-                              <PlayIcon className="w-4 h-4" />
-                              Lancer cette séance
-                            </button>
-                            <span className="text-[11px] text-app-secondary sm:text-right">Durée estimée selon ta séance</span>
-                          </div>
+                          <button
+                            onClick={() => window.location.href = `/workouts/${item.workout!.id}/play`}
+                            className="w-full flex items-center justify-center gap-2 btn-primary px-4 py-2.5 rounded-lg font-semibold text-sm shadow-md"
+                          >
+                            <PlayIcon className="w-4 h-4" />
+                            Lancer la séance
+                          </button>
                         )}
 
                         {savingItemId === item.id && (
@@ -420,9 +366,29 @@ const WeeklyPlanPage: React.FC = () => {
                 </div>
               )}
             </section>
-          ))}
-        </div>
-      )}
+
+            <section className="rounded-2xl border border-app bg-app-secondary/70 p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.12em] text-app-secondary">Cette semaine</p>
+                  <h3 className="text-base font-semibold text-app">Vue condensée</h3>
+                </div>
+              </div>
+              <ul className="divide-y divide-app/60">
+                {weeklySummary.map(({ day, label, hasContent }) => (
+                  <li key={day} className="flex items-center justify-between py-2.5">
+                    <span className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-app w-10">{dayLabel[day].slice(0, 3)}</span>
+                      <span className="text-sm text-app-secondary">{label}</span>
+                    </span>
+                    <span className={`h-2.5 w-2.5 rounded-full ${hasContent ? 'bg-primary' : 'bg-app-secondary'}`} aria-hidden />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </>
+        )}
+      </div>
     </Layout>
   );
 };

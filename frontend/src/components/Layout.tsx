@@ -38,7 +38,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideNav }) => {
     <div className="min-h-screen flex flex-col bg-app text-app transition-colors">
       {/* Header */}
       <header className="sticky top-0 z-20 backdrop-blur-2xl bg-gradient-to-b from-app-secondary/95 to-app-secondary/70 border-b border-primary/20 shadow-md transition-all duration-300">
-        <div className="px-6 py-4 flex items-center justify-between max-w-md mx-auto">
+        <div className="px-6 py-4 flex items-center justify-between max-w-md mx-auto relative">
           <Link to="/" className="flex items-center gap-2 group cursor-pointer">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-active:scale-95" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)' }}>
               <BoltIcon className="w-5 h-5 text-white" />
@@ -48,7 +48,14 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideNav }) => {
               <p className="text-xs text-app-secondary font-medium">Entraînement</p>
             </div>
           </Link>
-          
+
+          {/* Pastille DEV centrée, visible uniquement en dev */}
+          {import.meta.env.MODE === 'development' && (
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+              <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-white">DEV</span>
+            </div>
+          )}
+
           <ThemeSwitcher />
         </div>
       </header>

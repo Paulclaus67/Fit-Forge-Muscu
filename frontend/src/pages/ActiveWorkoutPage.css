@@ -7,6 +7,12 @@
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   overscroll-behavior: contain;
+  /* Support de toutes les tailles d'écran avec viewport units */
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height pour mobile */
+  width: 100vw;
+  width: 100dvw; /* Dynamic viewport width pour mobile */
+  overflow-x: hidden;
 }
 
 /* Thème basé sur l'attribut data-theme */
@@ -50,7 +56,7 @@
 /* Optimisation pour landscape ou petit écran (dehors) */
 @media (max-height: 500px) {
   .chrono-giant {
-    font-size: 4rem !important;
+    font-size: 3rem !important;
   }
 
   .header-minimal {
@@ -59,6 +65,32 @@
 
   .footer-controls {
     padding: 0.75rem;
+  }
+}
+
+/* Responsivité améliorée pour tous les écrans */
+@media (max-width: 360px) {
+  .chrono-giant {
+    font-size: 3.5rem !important;
+  }
+}
+
+@media (min-width: 361px) and (max-width: 414px) {
+  .chrono-giant {
+    font-size: 4.5rem !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .chrono-giant {
+    font-size: 7rem !important;
+  }
+}
+
+/* Support des écrans ultra-larges */
+@media (min-width: 1024px) {
+  .chrono-giant {
+    font-size: 8rem !important;
   }
 }
 
@@ -147,12 +179,13 @@ button:not(:disabled):hover {
 @media (orientation: portrait) {
   .active-workout {
     max-height: 100vh;
+    max-height: 100dvh;
   }
 }
 
 @media (orientation: landscape) {
   .chrono-giant {
-    font-size: 3rem;
+    font-size: 3rem !important;
   }
 
   .header-minimal {
@@ -161,6 +194,12 @@ button:not(:disabled):hover {
 
   .footer-controls {
     padding: 0.5rem;
+  }
+  
+  /* Adapter la hauteur du contenu en paysage */
+  .active-workout {
+    height: 100vh;
+    height: 100dvh;
   }
 }
 

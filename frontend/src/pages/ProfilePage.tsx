@@ -1,5 +1,5 @@
 // src/pages/ProfilePage.tsx
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -20,6 +20,11 @@ import {
 } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
 
 const MAX_PROFILE_DIMENSION = 512;
 const IMAGE_QUALITY = 0.82;
@@ -68,9 +73,36 @@ const ProfilePage: React.FC = () => {
   const [completedCount, setCompletedCount] = useState(0);
   const [createdCount, setCreatedCount] = useState(0);
   const [uploadingPicture, setUploadingPicture] = useState(false);
+  const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installStatus, setInstallStatus] = useState<'idle' | 'available' | 'prompted' | 'installed'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Pour le graphique : date -> temps passé (en minutes)
   const [sessionStats, setSessionStats] = useState<{ dateLabel: string; dateValue: number; duration: number }[]>([]);
+
+  const memberSinceText = useMemo(
+    () => new Date(user?.createdAt ?? Date.now()).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
+    [user?.createdAt]
+  );
+
+  const totalDurationMin = useMemo(
+    () => sessionStats.reduce((sum, s) => sum + s.duration, 0),
+    [sessionStats]
+  );
+
+  const handleInstall = async () => {
+    if (!installPromptEvent) return;
+    try {
+      await installPromptEvent.prompt();
+      const choice = await installPromptEvent.userChoice;
+      if (choice.outcome === 'accepted') {
+        setInstallStatus('prompted');
+      } else {
+        setInstallStatus('idle');
+      }
+    } finally {
+      setInstallPromptEvent(null);
+    }
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -108,6 +140,34 @@ const ProfilePage: React.FC = () => {
       .finally(() => setLoadingStats(false));
   }, [token]);
 
+  // PWA install prompt handling
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+    if (isStandalone) {
+      setInstallStatus('installed');
+    }
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      const bip = event as BeforeInstallPromptEvent;
+      bip.preventDefault();
+      setInstallPromptEvent(bip);
+      setInstallStatus('available');
+    };
+
+    const handleAppInstalled = () => {
+      setInstallStatus('installed');
+      setInstallPromptEvent(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !token) return;
@@ -144,19 +204,14 @@ const ProfilePage: React.FC = () => {
 
   return (
     <Layout>
-      {/* Hero Header */}
-      <div className="relative mb-6 overflow-hidden rounded-2xl bg-app-secondary p-6 shadow-2xl border border-app">
-        <div className="absolute inset-0" />
-        <div className="relative">
-          <div className="flex items-center gap-4 mb-4">
+      <div className="space-y-5">
+        {/* Carte identité compacte */}
+        <section className="rounded-2xl border border-app bg-app-secondary/80 p-5 shadow-sm">
+          <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center overflow-hidden">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center overflow-hidden border-2 border-primary/40">
                 {user.profilePicture ? (
-                  <img
-                    src={user.profilePicture}
-                    alt={user.username}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={user.profilePicture} alt={user.username} className="w-full h-full object-cover" />
                 ) : (
                   <UserCircleIcon className="w-12 h-12 text-app" />
                 )}
@@ -164,103 +219,128 @@ const ProfilePage: React.FC = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingPicture}
-                className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg hover:bg-primary/80 transition-colors disabled:opacity-50"
+                className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg hover:bg-primary/80 transition-colors disabled:opacity-50"
                 title="Changer la photo de profil"
               >
                 <CameraIcon className="w-4 h-4 text-white" />
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="hidden"
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-app">{user.username}</h1>
-              <p className="text-sm text-app-secondary">Membre depuis {new Date(user.createdAt).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
-              {uploadingPicture && (
-                <p className="text-xs text-primary mt-1">Mise à jour de la photo...</p>
-              )}
+            <div className="flex-1 min-w-0 space-y-1">
+              <h1 className="text-xl font-bold text-app truncate">{user.username}</h1>
+              <p className="text-sm text-app-secondary">Membre depuis {memberSinceText}</p>
+              <p className="text-xs text-app-secondary">Profil · Identité & paramètres</p>
+              {uploadingPicture && <p className="text-[11px] text-primary">Mise à jour de la photo...</p>}
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Profile Information */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-app">Informations du compte</h2>
-        
-        <div className="bg-app-secondary border border-app rounded-xl p-4 space-y-4">
+        {/* Infos compte */}
+        <section className="rounded-2xl border border-app bg-app-secondary p-4 shadow-sm space-y-3">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center flex-shrink-0">
               <UserCircleIcon className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-app-secondary mb-1">Pseudo</label>
-              <div className="text-app font-medium">{user.username}</div>
+              <p className="text-xs font-medium text-app-secondary">Pseudo</p>
+              <p className="text-app font-semibold">{user.username}</p>
             </div>
           </div>
-
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center flex-shrink-0">
               <EnvelopeIcon className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-app-secondary mb-1">Email</label>
-              <div className="text-app">{user.email}</div>
+              <p className="text-xs font-medium text-app-secondary">Email</p>
+              <p className="text-app">{user.email}</p>
             </div>
           </div>
-
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center flex-shrink-0">
               <CalendarDaysIcon className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-app-secondary mb-1">Compte créé le</label>
-              <div className="text-app">{new Date(user.createdAt).toLocaleDateString('fr-FR', { 
-                day: 'numeric',
-                month: 'long', 
-                year: 'numeric' 
-              })}</div>
+              <p className="text-xs font-medium text-app-secondary">Compte créé le</p>
+              <p className="text-app">{new Date(user.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Actions Section */}
-        <div className="pt-4">
-          <h2 className="text-lg font-semibold text-app mb-4">Actions</h2>
-          
-          <button
-            onClick={logout}
-            className="w-full flex items-center justify-center gap-2 btn-danger px-4 py-3 rounded-xl font-semibold text-sm transition-colors"
-          >
-            <ArrowRightOnRectangleIcon className="w-5 h-5" />
-            Déconnexion
-          </button>
-        </div>
+        {/* Actions */}
+        <section className="rounded-2xl border border-app bg-app-secondary p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-app">Actions</h2>
+            <span className="text-[11px] text-app-secondary">Compte & app</span>
+          </div>
 
-        {/* Stats Section */}
-        <div className="pt-4">
-          <h2 className="text-lg font-semibold text-app mb-4">Statistiques</h2>
+          <div className="grid gap-2">
+            <button
+              onClick={logout}
+              className="w-full flex items-center justify-center gap-2 btn-danger px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+            >
+              <ArrowRightOnRectangleIcon className="w-5 h-5" />
+              Se déconnecter de cet appareil
+            </button>
+
+            <button
+              className={`w-full px-4 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
+                installStatus === 'installed'
+                  ? 'border-app text-app-secondary cursor-default'
+                  : installPromptEvent
+                  ? 'border-primary text-primary hover:border-primary/70'
+                  : 'border-app text-app-secondary hover:text-app'
+              }`}
+              onClick={handleInstall}
+              disabled={!installPromptEvent || installStatus === 'installed'}
+            >
+              {installStatus === 'installed'
+                ? 'App déjà installée'
+                : installPromptEvent
+                ? 'Installer l’app (PWA)'
+                : 'Installer l’app (PWA) — attends le prompt (bientôt)'}
+            </button>
+
+            <button
+              className="w-full px-4 py-2.5 rounded-xl border border-app text-sm text-app-secondary hover:text-app transition-colors"
+              disabled
+            >
+              Signaler un bug / feedback
+            </button>
+          </div>
+        </section>
+
+        {/* Statistiques */}
+        <section className="rounded-2xl border border-app bg-app-secondary p-4 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-app">Statistiques</h2>
+            <span className="text-[11px] text-app-secondary">Vue synthétique</span>
+          </div>
+
           {loadingStats ? (
-            <div className="text-app-secondary">Chargement...</div>
+            <div className="text-app-secondary text-sm">Chargement...</div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-app-secondary border border-app rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">{createdCount}</div>
-                  <div className="text-xs text-app-secondary">Séances créées</div>
+              <div className="grid grid-cols-2 gap-3 text-center">
+                <div className="rounded-xl border border-app bg-app py-3 px-2">
+                  <div className="text-2xl font-bold text-primary">{createdCount}</div>
+                  <p className="text-[11px] text-app-secondary">Séances créées</p>
                 </div>
-                <div className="bg-app-secondary border border-app rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">{completedCount}</div>
-                  <div className="text-xs text-app-secondary">Séances complétées</div>
+                <div className="rounded-xl border border-app bg-app py-3 px-2">
+                  <div className="text-2xl font-bold text-primary">{completedCount}</div>
+                  <p className="text-[11px] text-app-secondary">Séances complétées</p>
+                </div>
+                <div className="rounded-xl border border-app bg-app py-3 px-2">
+                  <div className="text-2xl font-bold text-primary">{totalDurationMin}</div>
+                  <p className="text-[11px] text-app-secondary">Minutes mesurées</p>
+                </div>
+                <div className="rounded-xl border border-app bg-app py-3 px-2">
+                  <div className="text-2xl font-bold text-primary">{sessionStats.length}</div>
+                  <p className="text-[11px] text-app-secondary">Séances avec durée</p>
                 </div>
               </div>
-              {/* Graphique temps passé par séance */}
-              <div className="bg-app-secondary border border-app rounded-xl p-4">
-                <h2 className="text-md font-semibold text-app mb-2">Temps passé par séance</h2>
+
+              <div className="bg-app border border-app rounded-xl p-4">
+                <h3 className="text-sm font-semibold text-app mb-2">Temps passé par séance</h3>
                 {sessionStats.length === 0 ? (
                   <div className="text-sm text-app-secondary">Aucune séance complétée avec durée mesurée pour l'instant.</div>
                 ) : (
@@ -285,12 +365,8 @@ const ProfilePage: React.FC = () => {
                     options={{
                       responsive: true,
                       plugins: {
-                        legend: {
-                          display: false,
-                        },
-                        title: {
-                          display: false,
-                        },
+                        legend: { display: false },
+                        title: { display: false },
                         tooltip: {
                           callbacks: {
                             label: (ctx) => `${ctx.parsed.y} min`,
@@ -299,32 +375,16 @@ const ProfilePage: React.FC = () => {
                       },
                       scales: {
                         x: {
-                          title: {
-                            display: true,
-                            text: 'Date',
-                            color: isDark ? '#fff' : '#1f2937',
-                          },
-                          grid: {
-                            color: isDark ? 'rgba(100,116,139,0.2)' : 'rgba(200,210,220,0.3)',
-                          },
-                          ticks: {
-                            color: isDark ? '#fff' : '#1f2937',
-                          },
+                          title: { display: true, text: 'Date', color: isDark ? '#fff' : '#1f2937' },
+                          grid: { color: isDark ? 'rgba(100,116,139,0.2)' : 'rgba(200,210,220,0.3)' },
+                          ticks: { color: isDark ? '#fff' : '#1f2937' },
                         },
                         y: {
-                          title: {
-                            display: true,
-                            text: 'Temps (min)',
-                            color: isDark ? '#fff' : '#1f2937',
-                          },
+                          title: { display: true, text: 'Temps (min)', color: isDark ? '#fff' : '#1f2937' },
                           beginAtZero: true,
                           suggestedMax: Math.max(...sessionStats.map((s) => s.duration), 10) + 5,
-                          grid: {
-                            color: isDark ? 'rgba(100,116,139,0.2)' : 'rgba(200,210,220,0.3)',
-                          },
-                          ticks: {
-                            color: isDark ? '#fff' : '#1f2937',
-                          },
+                          grid: { color: isDark ? 'rgba(100,116,139,0.2)' : 'rgba(200,210,220,0.3)' },
+                          ticks: { color: isDark ? '#fff' : '#1f2937' },
                         },
                       },
                     }}
@@ -334,7 +394,18 @@ const ProfilePage: React.FC = () => {
               </div>
             </>
           )}
-        </div>
+        </section>
+
+        {/* Infos app / PWA */}
+        <section className="rounded-2xl border border-app bg-app-secondary p-4 shadow-sm space-y-2 text-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-app">App & PWA</h2>
+            <span className="text-[11px] text-app-secondary">Infos appareil</span>
+          </div>
+          <p className="text-app-secondary text-sm">Mode hors-ligne : les dernières séances restent accessibles. Synchronisation au prochain réseau.</p>
+          <p className="text-app-secondary text-sm">Installation PWA : utilise le bouton ci-dessus quand le navigateur propose l’installation.</p>
+          <p className="text-app-secondary text-sm">Version : dev</p>
+        </section>
       </div>
     </Layout>
   );

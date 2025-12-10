@@ -1,5 +1,5 @@
 // src/pages/ActiveWorkoutPage.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getWorkout, type WorkoutDetail } from '../api/workouts';
 import { XMarkIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
@@ -89,6 +89,9 @@ const ActiveWorkoutPage: React.FC = () => {
     return localStorage.getItem(STORAGE_KEY) === null;
   });
 
+  // Wake Lock pour empêcher la mise en veille
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
   // Charger la séance + session sauvegardée
   useEffect(() => {
     if (!id) return;
@@ -123,6 +126,65 @@ const ActiveWorkoutPage: React.FC = () => {
       setElapsedSeconds(0);
     }
   }, [showSummary, sessionStart]);
+
+  // Gérer le Wake Lock pour empêcher la mise en veille pendant la séance
+  useEffect(() => {
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator && !showSummary && !sessionDone) {
+          wakeLockRef.current = await navigator.wakeLock.request('screen');
+          console.log('Wake Lock activé');
+        }
+      } catch (err) {
+        console.warn('Wake Lock non supporté ou refusé:', err);
+      }
+    };
+
+    const releaseWakeLock = async () => {
+      if (wakeLockRef.current) {
+        try {
+          await wakeLockRef.current.release();
+          wakeLockRef.current = null;
+          console.log('Wake Lock désactivé');
+        } catch (err) {
+          console.warn('Erreur lors de la libération du Wake Lock:', err);
+        }
+      }
+    };
+
+    if (!showSummary && !sessionDone) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+
+    // Nettoyer à la destruction du composant
+    return () => {
+      releaseWakeLock();
+    };
+  }, [showSummary, sessionDone]);
+
+  // Réactiver le Wake Lock si la page devient visible à nouveau (retour de l'arrière-plan)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && !showSummary && !sessionDone) {
+        try {
+          if ('wakeLock' in navigator && !wakeLockRef.current) {
+            wakeLockRef.current = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock réactivé après retour');
+          }
+        } catch (err) {
+          console.warn('Impossible de réactiver le Wake Lock:', err);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [showSummary, sessionDone]);
 
   // Mettre à jour le chrono global (toutes les secondes)
   useEffect(() => {
@@ -401,7 +463,7 @@ const ActiveWorkoutPage: React.FC = () => {
         // Démarrer le chrono de repos si défini
         if (currentExercise.restSec && currentExercise.restSec > 0) {
           setRestRemaining(currentExercise.restSec);
-          setRestRunning(false);
+          setRestRunning(true); // Démarrer automatiquement
         } else {
           setRestRemaining(null);
           setRestRunning(false);
@@ -414,7 +476,7 @@ const ActiveWorkoutPage: React.FC = () => {
           const nextExercise = workout.exercises[exerciseIndex + 1];
           if (nextExercise.restSec && nextExercise.restSec > 0) {
             setRestRemaining(nextExercise.restSec);
-            setRestRunning(false);
+            setRestRunning(true); // Démarrer automatiquement
           } else {
             setRestRemaining(null);
             setRestRunning(false);

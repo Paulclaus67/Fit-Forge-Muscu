@@ -1,85 +1,98 @@
 // src/pages/WorkoutsPage.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { Layout } from '../components/Layout';
-import { getWorkouts, getMyWorkouts, createWorkout, cloneWorkout } from '../api/workouts';
+import { getWorkouts, getMyWorkouts, createWorkout, cloneWorkout, deleteWorkout } from '../api/workouts';
 import type { Workout } from '../api/workouts';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { PlusIcon, MagnifyingGlassIcon, DocumentDuplicateIcon, PlayIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassIcon, DocumentDuplicateIcon, PlayIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 interface WorkoutCardProps {
   workout: Workout;
   kind: 'mine' | 'template';
   onDuplicate: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, kind, onDuplicate }) => {
+const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout, kind, onDuplicate, onDelete }) => {
   const { token } = useAuth();
+  const exerciseCount = workout.exercises?.length ?? null;
+  const metaParts = [workout.type === 'CIRCUIT' ? 'Circuit' : 'Simple'];
+  if (exerciseCount) {
+    metaParts.push(`${exerciseCount} exos`);
+  }
 
   return (
-    <div className="group bg-app-secondary border border-app rounded-xl p-4 hover:bg-app transition-colors duration-200 shadow-sm hover:shadow-md">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
+    <div className="group rounded-2xl border border-app bg-app-secondary/80 p-4 shadow-sm hover:shadow-md hover:border-primary/50 transition-all">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 space-y-1">
           <Link to={`/workouts/${workout.id}`} className="block">
             <h3 className="text-lg font-semibold text-app group-hover:text-primary transition-colors">
               {workout.name}
             </h3>
           </Link>
+          <p className="text-[12px] text-app-secondary">
+            {metaParts.join(' · ')}
+          </p>
           {workout.description && (
-            <p className="text-sm text-app-secondary mt-1 line-clamp-2">{workout.description}</p>
+            <p className="text-sm text-app-secondary line-clamp-2">{workout.description}</p>
           )}
         </div>
-        <div className="flex items-center gap-2 ml-4">
-          <span className={`text-xs px-2 py-1 rounded-full border ${
-            workout.type === 'CIRCUIT'
-              ? 'border-app text-app bg-app-secondary'
-              : 'border-app text-app bg-app-secondary'
-          }`}>
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-[11px] px-2 py-1 rounded-full border border-app text-app bg-app">
             {workout.type === 'CIRCUIT' ? 'Circuit' : 'Simple'}
           </span>
           {kind === 'template' && (
-            <span className="text-xs px-2 py-1 rounded-full border border-primary text-primary bg-app-secondary">
+            <span className="text-[11px] px-2 py-1 rounded-full border border-primary/60 text-primary bg-primary/10">
               Template
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mt-2">
+      <div className="mt-3 space-y-2">
         <Link
           to={`/workouts/${workout.id}/play`}
-          className="flex items-center gap-2 btn-primary px-3 py-2 rounded-lg font-medium text-sm transition-colors"
+          className="w-full flex items-center justify-center gap-2 btn-primary px-4 py-2.5 rounded-lg font-semibold text-sm shadow-md"
         >
           <PlayIcon className="w-4 h-4" />
-          Lancer
+          Lancer la séance
         </Link>
 
-        <Link
-          to={`/workouts/${workout.id}`}
-          className="flex items-center gap-2 btn-secondary px-3 py-2 rounded-lg text-sm transition-colors"
-        >
-          Détails
-        </Link>
+        <div className="flex flex-wrap items-center gap-3 text-[12px] text-app-secondary">
+          {kind === 'mine' && (
+            <Link
+              to={`/workouts/${workout.id}/edit`}
+              className="px-3 py-2 rounded-lg border border-app text-app text-sm hover:border-primary/40 hover:text-primary transition-colors"
+            >
+              <PencilIcon className="w-4 h-4 inline" /> Modifier
+            </Link>
+          )}
 
-        {kind === 'mine' && (
-          <Link
-            to={`/workouts/${workout.id}/edit`}
-            className="flex items-center gap-2 btn-secondary px-3 py-2 rounded-lg text-sm transition-colors"
-          >
-            <PencilIcon className="w-4 h-4" />
-            Modifier
+          <Link to={`/workouts/${workout.id}`} className="hover:text-primary transition-colors">
+            Détails
           </Link>
-        )}
 
-        {token && kind === 'template' && (
-          <button
-            onClick={() => onDuplicate(String(workout.id))}
-            className="flex items-center gap-2 btn-secondary px-3 py-2 rounded-lg text-sm transition-colors"
-          >
-            <DocumentDuplicateIcon className="w-4 h-4" />
-            Cloner
-          </button>
-        )}
+          {kind === 'mine' && onDelete && (
+            <button
+              onClick={() => onDelete(String(workout.id))}
+              className="text-red-500 hover:text-red-400 transition-colors"
+              title="Supprimer la séance"
+            >
+              <TrashIcon className="w-4 h-4 inline" /> Supprimer
+            </button>
+          )}
+
+          {token && kind === 'template' && (
+            <button
+              onClick={() => onDuplicate(String(workout.id))}
+              className="text-app hover:text-primary transition-colors"
+            >
+              <DocumentDuplicateIcon className="w-4 h-4 inline" /> Cloner
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -95,6 +108,9 @@ const WorkoutsPage: React.FC = () => {
   const [newName, setNewName] = useState('');
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<'mine' | 'templates'>(token ? 'mine' : 'templates');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [workoutToDelete, setWorkoutToDelete] = useState<Workout | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -179,46 +195,76 @@ const WorkoutsPage: React.FC = () => {
     }
   }
 
+  function handleDelete(workoutId: string) {
+    if (!token) return;
+    const workout = myWorkouts.find(w => w.id === Number(workoutId));
+    if (!workout) return;
+    
+    setWorkoutToDelete(workout);
+    setShowDeleteDialog(true);
+  }
+
+  async function confirmDelete() {
+    if (!token || !workoutToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      await deleteWorkout(workoutToDelete.id, token);
+      const [templates, mine] = await Promise.all([
+        getWorkouts(),
+        getMyWorkouts(token),
+      ]);
+      setWorkouts(templates);
+      setMyWorkouts(mine);
+      setShowDeleteDialog(false);
+      setWorkoutToDelete(null);
+    } catch (err: any) {
+      alert(err.message || 'Erreur lors de la suppression de la séance. Veuillez réessayer.');
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <Layout>
-      {/* Hero Header */}
-      <div className="relative mb-6 overflow-hidden rounded-2xl bg-app-secondary p-6 shadow-2xl border border-app">
-        <div>
-          <h1 className="text-2xl font-bold text-app mb-2">Séances</h1>
-          <p className="text-sm text-app-secondary mb-4">Consultez, modifiez, créez et lancez vos séances.</p>
-
-          {/* Search and Create */}
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-app-secondary" />
-              <input
-                className="w-full pl-10 pr-4 py-3 bg-app-secondary border border-app rounded-xl text-sm text-app placeholder-app-secondary focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                placeholder="Rechercher une séance..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
+      <div className="space-y-5">
+        {/* Header compact */}
+        <div className="rounded-2xl border border-app bg-app-secondary/70 p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-app-secondary">Séances</p>
+              <h1 className="text-xl font-semibold text-app">Crée, modifie et lance tes séances</h1>
+              <p className="text-sm text-app-secondary">Mode gestion pour organiser, mode action pour lancer direct.</p>
             </div>
             {token && (
               <button
                 onClick={() => { setNewName(''); setShowCreateModal(true); }}
-                className="flex items-center gap-2 btn-primary px-4 py-3 rounded-xl font-semibold text-sm transition-colors"
+                className="flex items-center gap-2 btn-primary px-4 py-2 rounded-lg font-semibold text-sm shadow-md"
               >
                 <PlusIcon className="w-4 h-4" />
                 Créer
               </button>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Tabs */}
-      {!query.trim() && (
-        <div className="mb-6 flex gap-2 p-1 bg-app-secondary rounded-xl border border-app">
+          <div className="relative mt-3">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-app-secondary" />
+            <input
+              className="w-full pl-10 pr-4 py-3 bg-app border border-app rounded-xl text-sm text-app placeholder-app-secondary focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+              placeholder="Rechercher une séance..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 p-1 bg-app-secondary/70 rounded-xl border border-app shadow-sm">
           {token && (
             <button
-              className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-colors ${
                 tab === 'mine'
-                  ? 'bg-primary text-app'
+                  ? 'bg-primary text-app shadow-primary/20 shadow'
                   : 'text-app-secondary hover:bg-app'
               }`}
               onClick={() => setTab('mine')}
@@ -227,9 +273,9 @@ const WorkoutsPage: React.FC = () => {
             </button>
           )}
           <button
-            className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-colors ${
               tab === 'templates'
-                ? 'bg-primary text-app'
+                ? 'bg-primary text-app shadow-primary/20 shadow'
                 : 'text-app-secondary hover:bg-app'
             }`}
             onClick={() => setTab('templates')}
@@ -237,7 +283,7 @@ const WorkoutsPage: React.FC = () => {
             Templates
           </button>
         </div>
-      )}
+      </div>
 
       {/* Loading State */}
       {loading && (
@@ -263,8 +309,8 @@ const WorkoutsPage: React.FC = () => {
         <>
           {/* My Workouts */}
           {!query.trim() && tab === 'mine' && token && (
-            <div>
-              <h2 className="text-lg font-semibold text-app mb-4">Mes séances personnalisées</h2>
+            <div className="mt-4">
+              <h2 className="text-lg font-semibold text-app mb-4">Mes séances perso</h2>
               {filteredMine.length === 0 ? (
                 <div className="text-center py-12 bg-app-secondary border border-app rounded-xl">
                   <div className="w-16 h-16 bg-app rounded-full flex items-center justify-center mx-auto mb-4">
@@ -281,7 +327,7 @@ const WorkoutsPage: React.FC = () => {
               ) : (
                 <div className="grid gap-4 text-app">
                   {filteredMine.map((w) => (
-                    <WorkoutCard key={`mine-${w.id}`} workout={w} kind="mine" onDuplicate={handleDuplicate} />
+                    <WorkoutCard key={`mine-${w.id}`} workout={w} kind="mine" onDuplicate={handleDuplicate} onDelete={handleDelete} />
                   ))}
                 </div>
               )}
@@ -290,8 +336,8 @@ const WorkoutsPage: React.FC = () => {
 
           {/* Templates */}
           {!query.trim() && tab === 'templates' && (
-            <div>
-              <h2 className="text-lg font-semibold text-app mb-4">Templates pré-configurés</h2>
+            <div className="mt-4">
+              <h2 className="text-lg font-semibold text-app mb-4">Templates de base</h2>
               {filteredTemplates.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-app-secondary">Aucune séance classique trouvée</p>
@@ -318,7 +364,7 @@ const WorkoutsPage: React.FC = () => {
               ) : (
                 <div className="grid gap-4">
                   {combinedResults.map(({ kind, w }) => (
-                    <WorkoutCard key={`${kind}-${w.id}`} workout={w} kind={kind} onDuplicate={handleDuplicate} />
+                    <WorkoutCard key={`${kind}-${w.id}`} workout={w} kind={kind} onDuplicate={handleDuplicate} onDelete={kind === 'mine' ? handleDelete : undefined} />
                   ))}
                 </div>
               )}
@@ -372,6 +418,28 @@ const WorkoutsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        title="Supprimer cette séance ?"
+        description={
+          workoutToDelete
+            ? `Êtes-vous sûr de vouloir supprimer définitivement la séance "${workoutToDelete.name}" ? Cette action est irréversible.`
+            : "Êtes-vous sûr de vouloir supprimer cette séance ?"
+        }
+        confirmLabel="Supprimer"
+        cancelLabel="Annuler"
+        tone="danger"
+        isConfirming={isDeleting}
+        onCancel={() => {
+          if (!isDeleting) {
+            setShowDeleteDialog(false);
+            setWorkoutToDelete(null);
+          }
+        }}
+        onConfirm={confirmDelete}
+      />
     </Layout>
   );
 };

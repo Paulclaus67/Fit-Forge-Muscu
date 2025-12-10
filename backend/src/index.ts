@@ -24,6 +24,9 @@ if (process.env.NODE_ENV === 'production') {
 
 const app = express();
 
+// Respect X-Forwarded-For when behind a reverse proxy (prevents all users sharing one IP)
+app.set('trust proxy', 1);
+
 // Sécurité : Helmet pour les headers HTTP
 app.use(helmet({
   contentSecurityPolicy: false, // Désactivé pour permettre les inline scripts (PWA)
@@ -45,7 +48,7 @@ app.use(cors({
 // Rate limiting : limite de requêtes par IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limite à 100 requêtes par fenêtre
+  max: 600, // Limite plus large (env. 40 req/min) pour éviter les faux positifs
   message: { error: 'Trop de requêtes, veuillez réessayer plus tard' },
   standardHeaders: true,
   legacyHeaders: false,

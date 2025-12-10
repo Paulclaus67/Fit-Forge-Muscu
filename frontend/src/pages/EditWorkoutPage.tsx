@@ -1,10 +1,11 @@
 // src/pages/EditWorkoutPage.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { Layout } from '../components/Layout';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   getWorkout,
   updateWorkout,
+  deleteWorkout,
   type WorkoutDetail,
   type UpdateWorkoutExercisePayload,
 } from '../api/workouts';
@@ -22,6 +23,7 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 interface WorkoutExercise {
   exerciseId: number;
@@ -218,6 +220,7 @@ const ExerciseCard: React.FC<ExerciseCardProps> = ({
 const EditWorkoutPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { token } = useAuth();
+  const navigate = useNavigate();
 
   const [workout, setWorkout] = useState<WorkoutDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -229,6 +232,8 @@ const EditWorkoutPage: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
   const [workoutName, setWorkoutName] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleExerciseChange = (index: number, field: string, value: string) => {
     setExercises(prev => prev.map((ex, i) => i === index ? { ...ex, [field]: value } : ex));
@@ -359,6 +364,21 @@ const EditWorkoutPage: React.FC = () => {
     }
   };
 
+  const handleDeleteWorkout = async () => {
+    if (!token || !id) return;
+    
+    try {
+      setIsDeleting(true);
+      await deleteWorkout(Number(id), token);
+      navigate('/workouts');
+    } catch (err: any) {
+      setSaveError(err.message || 'Impossible de supprimer la séance. Veuillez réessayer.');
+      setShowDeleteDialog(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Layout hideNav>
       {/* Hero / header */}
@@ -410,6 +430,13 @@ const EditWorkoutPage: React.FC = () => {
             >
               <CheckIcon className="w-4 h-4" />
               {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+            </button>
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 px-6 py-2.5 rounded-lg font-medium text-sm transition-colors"
+            >
+              <TrashIcon className="w-4 h-4" />
+              Supprimer
             </button>
             <Link
               to="/workouts"
@@ -565,6 +592,25 @@ const EditWorkoutPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        title="Supprimer cette séance ?"
+        description={
+          workout
+            ? `Êtes-vous sûr de vouloir supprimer définitivement la séance "${workout.name}" ? Cette action est irréversible.`
+            : "Êtes-vous sûr de vouloir supprimer cette séance ?"
+        }
+        confirmLabel="Supprimer"
+        cancelLabel="Annuler"
+        tone="danger"
+        isConfirming={isDeleting}
+        onCancel={() => {
+          if (!isDeleting) setShowDeleteDialog(false);
+        }}
+        onConfirm={handleDeleteWorkout}
+      />
     </Layout>
   );
 };
