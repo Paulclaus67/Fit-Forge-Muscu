@@ -1,98 +1,62 @@
 # 🤖 Déploiement Automatique avec GitHub Actions
 
-## Configuration
+## Configuration (Méthode simple - Mot de passe)
 
-### 1. Générer une clé SSH pour GitHub Actions
-
-Sur votre **machine locale** (pas le VPS) :
-
-```bash
-# Générer une nouvelle paire de clés SSH
-ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_actions_deploy
-
-# Afficher la clé privée (à copier dans GitHub Secrets)
-cat ~/.ssh/github_actions_deploy
-
-# Afficher la clé publique (à ajouter au VPS)
-cat ~/.ssh/github_actions_deploy.pub
-```
-
-### 2. Ajouter la clé publique au VPS
-
-Connectez-vous à votre VPS et ajoutez la clé publique :
-
-```bash
-ssh ubuntu@votre-vps
-
-# Ajouter la clé publique aux authorized_keys
-nano ~/.ssh/authorized_keys
-# Collez la clé publique (celle qui finit par github-actions-deploy)
-# Sauvegardez avec Ctrl+X, Y, Enter
-
-# Vérifier les permissions
-chmod 600 ~/.ssh/authorized_keys
-chmod 700 ~/.ssh
-```
-
-### 3. Configurer les secrets GitHub
+### 1. Ajouter les secrets GitHub
 
 1. Allez sur votre dépôt GitHub : https://github.com/Paulclaus67/Fit-Forge-Muscu
 2. Cliquez sur **Settings** → **Secrets and variables** → **Actions**
 3. Cliquez sur **New repository secret**
 
-Ajoutez ces 3 secrets :
+Ajoutez ces **3 secrets** :
 
 #### `VPS_HOST`
 ```
 193.70.84.47
 ```
-(ou votre nom de domaine si vous préférez)
 
 #### `VPS_USERNAME`
 ```
 ubuntu
 ```
-(ou votre nom d'utilisateur SSH)
 
-#### `VPS_SSH_KEY`
+#### `VPS_PASSWORD`
 ```
------BEGIN OPENSSH PRIVATE KEY-----
-[Collez ici le contenu COMPLET de ~/.ssh/github_actions_deploy]
------END OPENSSH PRIVATE KEY-----
+[Votre mot de passe SSH ubuntu]
 ```
 
-### 4. Tester le déploiement automatique
+C'est tout ! Pas besoin de générer de clés SSH ! 🎉
 
-Une fois configuré, il suffit de :
+### 2. Tester le déploiement
 
-```bash
-# Sur votre machine locale
-git add .
-git commit -m "feat: nouvelle fonctionnalité"
+Une fois les 3 secrets ajoutés :
+
+```powershell
+cd C:\Users\pclau\application\muscu-pwa
+
+# Faire un petit commit test
+git commit --allow-empty -m "test: déploiement automatique"
 git push origin prod
 ```
 
-Et GitHub Actions déploiera automatiquement sur votre VPS ! 🎉
-
-### 5. Voir les logs de déploiement
+### 3. Voir les logs de déploiement
 
 1. Allez sur GitHub → **Actions**
 2. Cliquez sur le dernier workflow "Deploy to Production"
-3. Vous verrez tous les logs du déploiement en temps réel
+3. Vous verrez tous les logs en temps réel
 
 ## Avantages
 
-✅ **Push automatique** : Pushez sur `prod` et c'est déployé  
-✅ **Logs centralisés** : Tous les logs dans GitHub  
-✅ **Rollback facile** : Revertez un commit et c'est redéployé  
-✅ **Pas de connexion SSH manuelle** : Tout est automatisé  
+✅ **Pas de clé SSH à générer**  
+✅ **Configuration en 2 minutes**  
+✅ **Push sur prod = déploiement automatique**  
+✅ **Logs centralisés dans GitHub**  
 
 ## Sécurité
 
-- ✅ La clé SSH est chiffrée dans les GitHub Secrets
+- ✅ Le mot de passe est chiffré dans les GitHub Secrets
 - ✅ Seul GitHub Actions peut l'utiliser
 - ✅ Pas d'exposition des credentials
-- ✅ Clé dédiée au déploiement (peut être révoquée sans affecter vos accès)
 
 ## Workflow de déploiement
 
@@ -108,23 +72,51 @@ Et GitHub Actions déploiera automatiquement sur votre VPS ! 🎉
 5. ✅ Déploiement terminé !
 ```
 
+## Alternative avancée : Avec clé SSH
+
+Si vous préférez une **clé SSH dédiée** (plus sécurisé) au lieu du mot de passe :
+
+### Générer une clé SSH
+
+Sur votre VPS :
+
+```bash
+# Se connecter au VPS
+ssh ubuntu@193.70.84.47
+
+# Créer une nouvelle paire de clés pour GitHub Actions
+mkdir -p ~/.ssh
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_actions_deploy -N ""
+
+# Afficher la clé publique
+cat ~/.ssh/github_actions_deploy.pub
+
+# Afficher la clé privée (pour GitHub)
+cat ~/.ssh/github_actions_deploy
+```
+
+### Ajouter à GitHub Secrets
+
+Remplacez le secret `VPS_PASSWORD` par `VPS_SSH_KEY` :
+
+1. Supprimes le secret `VPS_PASSWORD` 
+2. Créez un nouveau secret `VPS_SSH_KEY`
+3. Collez le contenu complet de la clé privée
+
+### Modifiez le workflow
+
+Remplacez `password: ${{ secrets.VPS_PASSWORD }}` par `key: ${{ secrets.VPS_SSH_KEY }}`
+
 ## Commandes utiles
 
-### Désactiver temporairement le déploiement automatique
-Renommez `.github/workflows/deploy-prod.yml` en `.github/workflows/deploy-prod.yml.disabled`
+### Désactiver temporairement le déploiement
+Renommez `.github/workflows/deploy-prod.yml` en `.github/workflows/deploy-prod.yml.disable`
 
-### Tester la connexion SSH
+### Forcer un redéploiement
 ```bash
-ssh -i ~/.ssh/github_actions_deploy ubuntu@193.70.84.47
+git commit --allow-empty -m "chore: redéploiement manuel"
+git push origin prod
 ```
 
-### Révoquer la clé de déploiement
-Sur le VPS :
-```bash
-nano ~/.ssh/authorized_keys
-# Supprimez la ligne avec "github-actions-deploy"
-```
-
----
-
-**Important :** Ne commitez JAMAIS la clé privée dans le repository ! Elle doit rester uniquement dans les GitHub Secrets.
+### Voir tous les déploiements
+https://github.com/Paulclaus67/Fit-Forge-Muscu/actions
