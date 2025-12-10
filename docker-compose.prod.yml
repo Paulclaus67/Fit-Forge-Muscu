@@ -26,5 +26,5 @@ services:
     environment:
       - VITE_API_URL=https://api.fitforge-muscu.fr
     ports:
-      - "5173:5173"
+      - "5173:80"
     restart: always
