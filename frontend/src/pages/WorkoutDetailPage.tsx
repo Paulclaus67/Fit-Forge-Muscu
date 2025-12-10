@@ -84,7 +84,7 @@ const WorkoutDetailPage: React.FC = () => {
                       <p className="text-sm text-app-secondary max-w-2xl">{workout.description}</p>
                     )}
                   </div>
-                  <div className="flex flex-wrap sm:flex-col gap-2 flex-shrink-0">
+                  <div className="flex flex-wrap sm:flex-col gap-2 shrink-0">
                     <span className={`text-xs px-3 py-1.5 rounded-full border font-medium w-fit ${
                       workout.type === 'CIRCUIT'
                         ? 'border-orange-500/50 text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-500/10'
@@ -183,7 +183,7 @@ const WorkoutDetailPage: React.FC = () => {
                   >
                     {/* Exercise Header */}
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-app flex items-center justify-center text-sm font-bold">
+                      <span className="shrink-0 w-8 h-8 rounded-full bg-primary text-app flex items-center justify-center text-sm font-bold">
                         {idx + 1}
                       </span>
                       <h3 className="text-base font-semibold text-app flex-1">{step.exercise.name}</h3>

@@ -52,7 +52,7 @@ export const Alert: React.FC<AlertProps> = ({
       role="alert"
     >
       <div className="flex gap-3">
-        <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${config.text}`} />
+        <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${config.text}`} />
         <div className="flex-1">
           {title && <h3 className={`font-semibold ${config.text}`}>{title}</h3>}
           <p className={`text-sm ${config.text}`}>{message}</p>
@@ -60,7 +60,7 @@ export const Alert: React.FC<AlertProps> = ({
         {closeable && onClose && (
           <button
             onClick={onClose}
-            className={`flex-shrink-0 text-lg font-bold ${config.text} hover:opacity-70 transition-opacity`}
+            className={`shrink-0 text-lg font-bold ${config.text} hover:opacity-70 transition-opacity`}
             aria-label="Fermer l'alerte"
           >
             ×

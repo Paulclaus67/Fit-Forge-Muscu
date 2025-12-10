@@ -238,7 +238,7 @@ const ProfilePage: React.FC = () => {
         {/* Infos compte */}
         <section className="rounded-2xl border border-app bg-app-secondary p-4 shadow-sm space-y-3">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center shrink-0">
               <UserCircleIcon className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
@@ -247,7 +247,7 @@ const ProfilePage: React.FC = () => {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center shrink-0">
               <EnvelopeIcon className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
@@ -256,7 +256,7 @@ const ProfilePage: React.FC = () => {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-app rounded-lg flex items-center justify-center shrink-0">
               <CalendarDaysIcon className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">

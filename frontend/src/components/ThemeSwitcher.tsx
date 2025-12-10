@@ -66,7 +66,7 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
         aria-label="Choisir le thème"
         title="Choisir le thème"
       >
-        <div className="absolute inset-0 rounded-full dark:bg-gradient-to-br dark:from-white/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 rounded-full dark:bg-linear-to-br dark:from-white/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         {mode === 'dark' ? (
           <SunIcon className="w-6 h-6 dark:text-white text-primary relative z-10 transition-transform group-hover:rotate-180 duration-500 drop-shadow-md" />
         ) : (
@@ -92,7 +92,7 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
                 }`}
               >
                 {mode === 'light' && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-transparent" />
                 )}
                 <SunIcon
                   className={`w-7 h-7 relative z-10 transition-transform duration-300 ${
@@ -111,7 +111,7 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
                 }`}
               >
                 {mode === 'dark' && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-transparent" />
                 )}
                 <MoonIcon
                   className={`w-7 h-7 relative z-10 transition-transform duration-300 ${
@@ -142,10 +142,10 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
                     aria-label={`Choisir le thème ${t}`}
                   >
                     {isSelected && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+                      <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10" />
                     )}
 
-                    <div className="relative z-10 flex-shrink-0">
+                    <div className="relative z-10 shrink-0">
                       <div
                         className={`w-10 h-10 rounded-full shadow-md transition-transform duration-300 ${
                           isSelected ? 'scale-110 ring-2 ring-primary ring-offset-2 ring-offset-app-secondary' : 'group-hover:scale-110'
