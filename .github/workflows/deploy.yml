@@ -1,0 +1,40 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          cd backend && npm ci --production
+          cd ../frontend && npm ci
+      
+      - name: Build Frontend
+        run: cd frontend && npm run build
+      
+      - name: Build Backend
+        run: cd backend && npm run build
+      
+      # Ajouter ici les étapes de déploiement vers votre serveur
+      # Par exemple : Vercel, Netlify, AWS, etc.
+      
+      - name: Deployment Info
+        run: |
+          echo "Build completed successfully!"
+          echo "Ready to deploy to production"

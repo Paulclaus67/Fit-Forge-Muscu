@@ -72,19 +72,37 @@ npm install
 
 ### Développement
 
-**Démarrer le backend :**
+**Option 1 : Démarrage rapide avec npm (recommandé)**
 ```bash
-cd backend
 npm run dev
 ```
-Le serveur démarre sur `http://localhost:4000`
+Cette commande démarre automatiquement le backend ET le frontend.
 
-**Démarrer le frontend :**
+**Option 2 : Avec PowerShell**
+```powershell
+.\dev.ps1
+```
+
+**Option 3 : Avec Docker**
 ```bash
+docker-compose up
+```
+
+**Option 4 : Démarrage manuel**
+```bash
+# Terminal 1 - Backend
+cd backend
+npm run dev
+
+# Terminal 2 - Frontend
 cd frontend
 npm run dev
 ```
-L'application est accessible sur `http://localhost:5173`
+
+**URLs d'accès:**
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:4000`
+- Prisma Studio: `npm run prisma:studio` (dans `/backend`)
 
 ### Production
 
@@ -105,12 +123,17 @@ npm start
 
 ```
 muscu-pwa/
-├── backend/              # API Node.js
+├── .github/             # GitHub Actions & Templates
+│   ├── workflows/       # CI/CD pipelines
+│   └── ISSUE_TEMPLATE/  # Templates d'issues
+├── .vscode/             # Configuration VS Code
+├── backend/             # API Node.js
 │   ├── prisma/          # Schéma et migrations de la BDD
 │   ├── src/
 │   │   ├── routes/      # Routes API
 │   │   ├── middleware/  # Middlewares Express
 │   │   └── utils/       # Utilitaires
+│   ├── Dockerfile       # Container backend
 │   └── package.json
 ├── frontend/            # Application React
 │   ├── src/
@@ -119,7 +142,11 @@ muscu-pwa/
 │   │   ├── context/    # Context API
 │   │   ├── hooks/      # Hooks personnalisés
 │   │   └── pages/      # Pages de l'application
+│   ├── Dockerfile       # Container frontend
 │   └── package.json
+├── docker-compose.yml   # Orchestration Docker
+├── API_DOCUMENTATION.md # Documentation API complète
+├── CONTRIBUTING.md      # Guide de contribution
 └── README.md
 ```
 
@@ -170,34 +197,60 @@ L'application supporte deux thèmes avec une palette de couleurs optimisée :
 
 ## 📝 API Endpoints
 
-### Authentification
-- `POST /api/auth/register` - Inscription
-- `POST /api/auth/login` - Connexion
-- `GET /api/auth/me` - Profil utilisateur
+Consultez la [documentation API complète](./API_DOCUMENTATION.md) pour tous les détails.
 
-### Exercices
-- `GET /api/exercises` - Liste des exercices
-- `GET /api/exercises/:id` - Détail d'un exercice
+### Aperçu rapide
 
-### Entraînements
-- `GET /api/workouts` - Liste des workouts
-- `POST /api/workouts` - Créer un workout
-- `GET /api/workouts/:id` - Détail d'un workout
-- `PUT /api/workouts/:id` - Modifier un workout
-- `DELETE /api/workouts/:id` - Supprimer un workout
-
-### Plan hebdomadaire
-- `GET /api/weekly-plan` - Plan de la semaine
-- `PUT /api/weekly-plan` - Mettre à jour le plan
+- **Authentification** : `/auth/register`, `/auth/login`, `/auth/me`
+- **Exercices** : `/exercises`, `/exercises/:id`
+- **Entraînements** : `/workouts` (GET, POST, PUT, DELETE)
+- **Plan hebdomadaire** : `/weekly-plan` (GET, PUT)
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou une pull request.
+Les contributions sont les bienvenues ! Consultez le [guide de contribution](./CONTRIBUTING.md) pour commencer.
+
+### Liens utiles
+
+- 📚 [Documentation API](./API_DOCUMENTATION.md)
+- 🤝 [Guide de contribution](./CONTRIBUTING.md)
+- 🐛 [Signaler un bug](https://github.com/Paulclaus67/Fit-Forge-Muscu/issues/new?template=bug_report.md)
+- ✨ [Proposer une fonctionnalité](https://github.com/Paulclaus67/Fit-Forge-Muscu/issues/new?template=feature_request.md)
+
+## 🚀 Déploiement
+
+### Avec Docker
+```bash
+docker-compose up -d
+```
+
+### Build manuel
+```bash
+npm run build
+```
+
+### Variables d'environnement de production
+Assurez-vous de configurer :
+- `DATABASE_URL` - Chemin vers la base de données
+- `JWT_SECRET` - Clé secrète forte et unique
+- `PORT` - Port du serveur (défaut: 4000)
+- `NODE_ENV=production`
+
+## 📊 Badges
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
+![React](https://img.shields.io/badge/React-19.2-blue)
+![Node](https://img.shields.io/badge/Node-18+-green)
 
 ## 📄 Licence
 
-MIT
+MIT - Voir le fichier [LICENSE](./LICENSE) pour plus de détails.
 
 ## 👤 Auteur
 
-Créé avec ❤️ pour les passionnés de musculation
+**Paulclaus67**
+- GitHub: [@Paulclaus67](https://github.com/Paulclaus67)
+- Projet: [Fit Forge Muscu](https://github.com/Paulclaus67/Fit-Forge-Muscu)
+
+Créé avec ❤️ pour les passionnés de musculation 💪
