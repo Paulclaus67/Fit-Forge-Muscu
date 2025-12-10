@@ -94,7 +94,10 @@ const ProfilePage: React.FC = () => {
         const result = await updateProfilePicture(token, base64);
         updateUser(result.user);
       } catch (error) {
-        console.error('Erreur lors de l\'upload:', error);
+        // Erreur silencieuse en production
+        if (import.meta.env.DEV) {
+          console.error('Erreur lors de l\'upload:', error);
+        }
         alert('Erreur lors de l\'upload de l\'image');
       } finally {
         setUploadingPicture(false);

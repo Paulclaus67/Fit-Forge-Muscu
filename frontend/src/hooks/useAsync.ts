@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 interface UseAsyncOptions {
   onSuccess?: (data: any) => void;
@@ -36,14 +36,13 @@ export function useAsync<T>(
     }
   }, [asyncFunction, options]);
 
-  if (immediate) {
-    // Execute on mount and when dependencies change
-    const [executed, setExecuted] = useState(false);
-    if (!executed) {
-      setExecuted(true);
+  // Execute on mount if immediate is true
+  useEffect(() => {
+    if (immediate) {
       execute().catch(() => {});
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [immediate]);
 
   return { execute, status, data, error };
 }

@@ -1,5 +1,5 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import type { User } from '../api/auth';
 import { login as apiLogin, register as apiRegister } from '../api/auth';
 
@@ -18,23 +18,34 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+  // Initialize state from localStorage using lazy initialization
+  const [user, setUser] = useState<User | null>(() => {
     const stored = localStorage.getItem('auth');
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as { user: User; token: string };
-        setUser(parsed.user);
-        setToken(parsed.token);
+        return parsed.user;
       } catch {
         localStorage.removeItem('auth');
       }
     }
-    setLoading(false);
-  }, []);
+    return null;
+  });
+
+  const [token, setToken] = useState<string | null>(() => {
+    const stored = localStorage.getItem('auth');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as { user: User; token: string };
+        return parsed.token;
+      } catch {
+        // Already removed in user initialization
+      }
+    }
+    return null;
+  });
+
+  const loading = false;
 
   const saveAuth = (user: User, token: string) => {
     setUser(user);

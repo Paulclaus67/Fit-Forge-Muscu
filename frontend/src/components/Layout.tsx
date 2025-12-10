@@ -24,11 +24,8 @@ const tabs = [
 
 export const Layout: React.FC<LayoutProps> = ({ children, hideNav }) => {
   const location = useLocation();
-  
-  // Type pour les thèmes disponibles
-  type ThemeName = 'default' | 'forest' | 'ocean' | 'sunset';
 
-  // D�terminer quel onglet est actif
+  // Déterminer quel onglet est actif
   let activeIndex = tabs.findIndex((tab) => {
     if (tab.path === '/') {
       return location.pathname === '/';

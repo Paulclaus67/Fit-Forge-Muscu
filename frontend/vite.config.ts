@@ -3,6 +3,25 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // Build optimizations
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Séparer React et ses dépendances
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Séparer Chart.js
+          'chart-vendor': ['chart.js', 'react-chartjs-2'],
+          // Séparer les icônes
+          'icons': ['@heroicons/react'],
+        },
+      },
+    },
+    // Augmenter la limite de warning à 600kb
+    chunkSizeWarningLimit: 600,
+    // Source maps pour le debugging en production (optionnel)
+    sourcemap: false,
+  },
   plugins: [
     react(),
     VitePWA({
