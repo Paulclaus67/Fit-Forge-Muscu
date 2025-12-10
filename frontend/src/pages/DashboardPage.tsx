@@ -168,7 +168,7 @@ const DashboardPage: React.FC = () => {
     <Layout>
       <div className="space-y-5 text-app">
         {/* Hero : carte de la séance du jour */}
-        <section className="rounded-3xl border border-app bg-linear-to-br from-primary/20 via-app-secondary to-app p-5 shadow-xl">
+        <section className="rounded-3xl border border-app bg-gradient-to-br from-primary/20 via-app-secondary to-app p-5 shadow-xl">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3 flex-1">
               <Link to="/profile" className="shrink-0">

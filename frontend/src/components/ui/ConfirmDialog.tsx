@@ -36,7 +36,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
 
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-app bg-app-secondary shadow-2xl">
-        <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-(--primary)/40 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[color:var(--primary)]/40 to-transparent" />
 
         <div className="flex items-start gap-3 p-5">
           <div className="flex-1 space-y-2">
