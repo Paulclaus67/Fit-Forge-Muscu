@@ -1,0 +1,263 @@
+@import "tailwindcss";
+
+/* ===== BASE - Laisser Tailwind gérer les couleurs ===== */
+:root {
+  color-scheme: light;
+  /* CSS Variables for theme system (set dynamically) */
+  --bg: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text: #0f172a;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --primary: #10b981;
+  --primary-light: #d1fae5;
+  --accent: #0ea5e9;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* ===== UTILITAIRES ===== */
+
+/* Base document colors from theme variables */
+html {
+  background-color: var(--bg);
+  color: var(--text);
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Empêcher la sélection gênante pendant les tap */
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+/* Scrollbars discrètes - Mode clair */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4); /* slate-400 */
+  border-radius: 999px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* Scrollbars discrètes - Mode sombre */
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5); /* slate-600 */
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.7);
+}
+
+/* ===== INTERACTIVE ELEMENTS ===== */
+
+/* Better focus states for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for interactive elements */
+button,
+a,
+input,
+textarea,
+select {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Disable outline on mouse click to keep focus visible on keyboard */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Utility classes using CSS variables */
+.bg-app { background-color: var(--bg); }
+.bg-app-secondary { background-color: var(--bg-secondary); }
+.text-app { color: var(--text); }
+.text-app-secondary { color: var(--text-secondary); }
+.border-app { border-color: var(--border); }
+
+/* Button utilities with better hover states */
+.btn-primary { 
+  background-color: var(--primary); 
+  color: #0f172a;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-primary:hover { 
+  filter: brightness(1.08);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.text-primary { color: var(--primary); }
+.bg-primary { background-color: var(--primary); }
+.border-primary { border-color: var(--primary); }
+
+/* Secondary and Danger buttons tied to theme variables */
+.btn-secondary { 
+  background-color: var(--bg-secondary); 
+  color: var(--text); 
+  border: 1px solid var(--border);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-secondary:hover { 
+  background-color: var(--bg);
+  border-color: var(--text-secondary);
+  transform: translateY(-1px);
+}
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-danger { 
+  background-color: #ef4444; 
+  color: #ffffff; 
+  border: 1px solid #dc2626;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-danger:hover { 
+  filter: brightness(0.95);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+/* ===== LOADING SKELETON ===== */
+.skeleton {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(200, 200, 200, 0.2) 0%,
+    rgba(200, 200, 200, 0.3) 50%,
+    rgba(200, 200, 200, 0.2) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+html.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(100, 100, 100, 0.2) 0%,
+    rgba(100, 100, 100, 0.3) 50%,
+    rgba(100, 100, 100, 0.2) 100%
+  );
+}
+
+/* ===== INPUT STYLING ===== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  background-color: var(--bg-secondary);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary);
+  background-color: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* ===== CARDS & CONTAINERS ===== */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+html.dark .card-hover:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* ===== RESPONSIVE UTILITIES ===== */
+@media (max-width: 640px) {
+  body {
+    font-size: 0.9375rem;
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.transition-safe {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}

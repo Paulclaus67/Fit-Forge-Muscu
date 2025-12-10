@@ -1,0 +1,192 @@
+/* Styles pour la page ActiveWorkout - Optimisée pour street workout outdoor */
+
+/* Empêcher le zoom et la sélection sur la page de séance */
+.active-workout {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: contain;
+}
+
+/* Thème basé sur l'attribut data-theme */
+.active-workout[data-theme="dark"] {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.active-workout[data-theme="light"] {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Animation du chrono géant avec pulsation subtle */
+@keyframes pulse-chrono {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.chrono-giant {
+  animation: pulse-chrono 1s ease-in-out infinite;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* En mode sombre, ajouter une lueur discrète au chrono */
+.active-workout[data-theme="dark"] .chrono-giant {
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.3);
+  color: var(--text);
+}
+
+.active-workout[data-theme="light"] .chrono-giant {
+  color: var(--text);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Optimisation pour landscape ou petit écran (dehors) */
+@media (max-height: 500px) {
+  .chrono-giant {
+    font-size: 4rem !important;
+  }
+
+  .header-minimal {
+    padding: 0.5rem 1rem;
+  }
+
+  .footer-controls {
+    padding: 0.75rem;
+  }
+}
+
+/* Améliorer le contraste */
+.high-contrast-mode {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Gestes tactiles améliorés pour les doigts (dehors, potentiellement avec des gants) */
+button {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 50ms ease-out, background-color 150ms ease-out;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+/* Font optimisée pour le chrono (monospace) */
+.chrono-display {
+  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  letter-spacing: 0.1em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Zone tactile large pour les boutons principaux (au moins 48x48 pour une bonne utilisabilité) */
+.large-touch-target {
+  min-height: 48px;
+  min-width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Éviter le zoom accidentel lors de la saisie */
+input,
+button,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Smooth scroll pour les détails */
+.details-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Améliorations pour les animations fluides */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimiser le rendu des icônes */
+svg {
+  flex-shrink: 0;
+  backface-visibility: hidden;
+}
+
+/* Section principale du chrono */
+.chrono-section {
+  perspective: 1000px;
+}
+
+/* Boutons avec meilleure accessibilité */
+button:disabled {
+  cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+  text-decoration: none;
+}
+
+/* Vibration haptique (quelques appareils supportent) */
+@supports (animation-play-state: paused) {
+  .haptic {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
+/* Portrait vs Landscape */
+@media (orientation: portrait) {
+  .active-workout {
+    max-height: 100vh;
+  }
+}
+
+@media (orientation: landscape) {
+  .chrono-giant {
+    font-size: 3rem;
+  }
+
+  .header-minimal {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .footer-controls {
+    padding: 0.5rem;
+  }
+}
+
+/* Support du dark mode système */
+@media (prefers-color-scheme: dark) {
+  .active-workout {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .active-workout {
+    color-scheme: light;
+  }
+}
+
+/* Réduire les animations si préféré par l'utilisateur */
+@media (prefers-reduced-motion: reduce) {
+  .chrono-giant {
+    animation: none;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

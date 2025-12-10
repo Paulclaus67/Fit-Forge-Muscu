@@ -1,0 +1,216 @@
+// ---------- Générateur & datasource ----------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+
+// ---------- ENUMS ----------
+
+enum MuscleGroup {
+  CHEST
+  BACK
+  LEGS
+  SHOULDERS
+  BICEPS
+  TRICEPS
+  CORE
+  GLUTES
+  FULL_BODY
+  OTHER
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum WorkoutType {
+  SIMPLE   // Séance "classique"
+  CIRCUIT  // Circuit type "enchaîner les exos"
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+// ---------- USER & AUTH ----------
+
+model User {
+  id              Int       @id @default(autoincrement())
+  email           String    @unique
+  username        String    @unique
+  passwordHash    String
+  profilePicture  String?   // URL ou chemin de la photo de profil
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  exercises    Exercise[]
+  workouts     Workout[]
+  weeklyPlans  WeeklyPlan[]
+  sessions     Session[]
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  userAgent  String?
+  ipAddress  String?
+
+  @@index([userId])
+}
+
+// ---------- EXERCICES ----------
+
+model Exercise {
+  id              Int        @id @default(autoincrement())
+  name            String
+  description     String?
+  instructions    String?    // détails techniques, exécution
+  difficulty      Difficulty?
+  equipment       String?    // "barre de traction", "au sol", etc.
+
+  // Multi-user & personnalisation
+  ownerId         Int?       // null = exercice global (template)
+  owner           User?      @relation(fields: [ownerId], references: [id])
+
+  baseExerciseId  Int?       // si cet exercice personnalise un template global
+  baseExercise    Exercise?  @relation("ExerciseBase", fields: [baseExerciseId], references: [id])
+  derivedExercises Exercise[] @relation("ExerciseBase")
+
+  // Relations
+  muscles         ExerciseTargetMuscle[]
+  workoutSteps    WorkoutExercise[]
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([ownerId])
+  @@index([baseExerciseId])
+}
+
+model ExerciseTargetMuscle {
+  exerciseId Int
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  group      MuscleGroup
+  isPrimary  Boolean    @default(false)
+
+  @@id([exerciseId, group])
+}
+
+// ---------- SÉANCES (WORKOUTS) ----------
+
+model Workout {
+  id             Int       @id @default(autoincrement())
+  name           String
+  description    String?
+  type           WorkoutType @default(SIMPLE)
+
+  // Multi-user & personnalisation
+  ownerId        Int?      // null = séance globale
+  owner          User?     @relation(fields: [ownerId], references: [id])
+
+  baseWorkoutId  Int?
+  baseWorkout    Workout?  @relation("WorkoutBase", fields: [baseWorkoutId], references: [id])
+  derivedWorkouts Workout[] @relation("WorkoutBase")
+
+  isPublic       Boolean   @default(false)
+
+  // Relations
+  exercises      WorkoutExercise[]
+  plannedItems   WeeklyPlanItem[]
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([ownerId])
+  @@index([baseWorkoutId])
+}
+
+model WorkoutExercise {
+  id          Int      @id @default(autoincrement())
+
+  workoutId   Int
+  workout     Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  exerciseId  Int
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
+
+  order       Int      // ordre dans la séance
+
+  // Paramètres de l'exercice dans cette séance
+  sets        Int?     // nb de séries
+  reps        Int?     // nb de répétitions (si basé reps)
+  durationSec Int?     // durée en secondes (si basé temps)
+  restSec     Int?     // temps de repos entre séries
+
+  isOptional  Boolean  @default(false)
+  notes       String?
+
+  // Gestion basique des circuits : grouper des exos
+  circuitIndex Int?    // numéro du circuit (ex : 1 pour le premier circuit)
+  circuitOrder Int?    // ordre dans le circuit
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workoutId])
+  @@index([exerciseId])
+  @@index([circuitIndex, circuitOrder])
+}
+
+// ---------- PLANNING HEBDOMADAIRE ----------
+
+model WeeklyPlan {
+  id        Int             @id @default(autoincrement())
+  userId    Int
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String          // ex : "Programme principal"
+  isActive  Boolean         @default(true)
+
+  items     WeeklyPlanItem[]
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+model WeeklyPlanItem {
+  id         Int        @id @default(autoincrement())
+
+  planId     Int
+  plan       WeeklyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  dayOfWeek  DayOfWeek
+  order      Int        // pour gérer plusieurs éléments dans la journée
+
+  label      String     // ex : "10 min de poirier", "Étirements"
+  isOptional Boolean    @default(false)
+
+  // Lien optionnel vers une séance (séance du jour)
+  workoutId  Int?
+  workout    Workout?   @relation(fields: [workoutId], references: [id])
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([planId])
+  @@index([dayOfWeek])
+  @@index([workoutId])
+}

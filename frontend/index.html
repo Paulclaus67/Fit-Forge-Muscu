@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>FitForge - Gère ta musculation</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#047857" />
+    <meta name="description" content="FitForge - Gère tes séances de musculation et ton planning, même dehors." />
+
+    <!-- PWA capability -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- iOS fallback (kept for compatibility) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Use an existing asset (vite.svg) to avoid missing icon errors -->
+    <link rel="apple-touch-icon" href="/vite.svg" />
+
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Initialiser le thème rapidement pour éviter les flash
+      (function() {
+        const STORAGE_KEY = 'app-theme';
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else if (saved === 'light') {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          } else {
+            // Déterminer la préférence système
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) {
+              document.documentElement.classList.add('dark');
+              document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+              document.documentElement.setAttribute('data-theme', 'light');
+            }
+          }
+        } catch (e) {
+          // Si localStorage n'est pas accessible, utiliser la préférence système
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (prefersDark) {
+            document.documentElement.classList.add('dark');
+          }
+        }
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
