@@ -36,6 +36,11 @@ export default defineConfig({
     // Source maps pour le debugging en production (optionnel)
     sourcemap: false,
   },
+  server: {
+    host: true,
+    port: 5173,
+    allowedHosts: ['fitforge-muscu.fr', 'www.fitforge-muscu.fr'],
+  },
   plugins: [
     react(),
     VitePWA({

@@ -278,10 +278,6 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Demo Info */}
-        <div className="mt-6 p-4 rounded-xl bg-app/20 border border-app/50 text-xs text-app-secondary text-center">
-          <p>💡 Démo: Email de test disponible après inscription</p>
-        </div>
       </div>
     </div>
   );

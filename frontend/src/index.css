@@ -261,3 +261,13 @@ html.dark .card-hover:hover {
 .transition-safe {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
+
+/* Hide scrollbars for horizontal pills on mobile (prevents overlay cutting borders) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

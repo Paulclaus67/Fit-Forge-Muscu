@@ -13,12 +13,19 @@ authRouter.post('/register', async (req: Request, res: Response) => {
   try {
     const { email, username, password } = req.body;
 
-    if (!email || !username || !password) {
+    if (typeof email !== 'string' || typeof username !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ error: 'email, username et password sont requis' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = username.trim().toLowerCase();
+
+    if (!normalizedEmail || !normalizedUsername || !password.trim()) {
       return res.status(400).json({ error: 'email, username et password sont requis' });
     }
 
     const existing = await prisma.user.findFirst({
-      where: { OR: [{ email }, { username }] },
+      where: { OR: [{ email: normalizedEmail }, { username: normalizedUsername }] },
     });
 
     if (existing) {
@@ -29,8 +36,8 @@ authRouter.post('/register', async (req: Request, res: Response) => {
 
     const user = await prisma.user.create({
       data: {
-        email,
-        username,
+        email: normalizedEmail,
+        username: normalizedUsername,
         passwordHash,
       },
     });
@@ -64,7 +71,15 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   try {
     const { emailOrUsername, password } = req.body;
 
-    if (!emailOrUsername || !password) {
+    if (typeof emailOrUsername !== 'string' || typeof password !== 'string') {
+      return res
+        .status(400)
+        .json({ error: 'emailOrUsername et password sont requis' });
+    }
+
+    const identifier = emailOrUsername.trim().toLowerCase();
+
+    if (!identifier || !password.trim()) {
       return res
         .status(400)
         .json({ error: 'emailOrUsername et password sont requis' });
@@ -72,7 +87,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 
     const user = await prisma.user.findFirst({
       where: {
-        OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+        OR: [{ email: identifier }, { username: identifier }],
       },
     });
 

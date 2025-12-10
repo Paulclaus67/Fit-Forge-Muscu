@@ -228,7 +228,7 @@ const WeeklyPlanPage: React.FC = () => {
           </span>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 px-2">
+        <div className="flex gap-2 overflow-x-auto pb-3 pt-1 px-2 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
           {dayOrder.map((day) => {
             const mainCount = itemsByDay[day]?.length ?? 0;
             const warmupCount = warmupsByDay[day]?.length ?? 0;

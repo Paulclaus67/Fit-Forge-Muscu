@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  backend:
+    image: fit-forge-muscu-backend
+    build:
+      context: ./backend
+    container_name: muscu-pwa-backend
+    env_file:
+      - .env
+    ports:
+      - "4000:4000"
+    volumes:
+      - /opt/fitforge-data/dev.db:/app/dev.db
+    restart: always
+
+  frontend:
+    image: fit-forge-muscu-frontend
+    build:
+      context: ./frontend
+    container_name: muscu-pwa-frontend
+    env_file:
+      - .env
+    environment:
+      - VITE_API_URL=https://api.fitforge-muscu.fr
+    ports:
+      - "5173:5173"
+    restart: always
