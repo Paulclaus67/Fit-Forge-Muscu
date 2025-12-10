@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: '22.12.0'
           check-latest: true
 
       - name: Show Node & npm versions
@@ -65,7 +65,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: '22.12.0'
           check-latest: true
 
       - name: Show Node & npm versions
@@ -103,7 +103,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: '22.12.0'
           check-latest: true
 
       - name: Show Node & npm versions
@@ -157,7 +157,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22.12.0'
       
       - name: Audit Backend dependencies
         working-directory: ./backend
