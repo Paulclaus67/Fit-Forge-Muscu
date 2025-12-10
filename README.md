@@ -1,5 +1,11 @@
 # 💪 Muscu PWA
 
+[![CI/CD Pipeline](https://github.com/Paulclaus67/Fit-Forge-Muscu/actions/workflows/ci.yml/badge.svg)](https://github.com/Paulclaus67/Fit-Forge-Muscu/actions/workflows/ci.yml)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
+![React](https://img.shields.io/badge/React-19.2-blue)
+![Node](https://img.shields.io/badge/Node-18+-green)
+
 Application web progressive (PWA) pour la gestion et le suivi d'entraînements de musculation.
 
 ## 📋 Description
@@ -235,13 +241,6 @@ Assurez-vous de configurer :
 - `JWT_SECRET` - Clé secrète forte et unique
 - `PORT` - Port du serveur (défaut: 4000)
 - `NODE_ENV=production`
-
-## 📊 Badges
-
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
-![React](https://img.shields.io/badge/React-19.2-blue)
-![Node](https://img.shields.io/badge/Node-18+-green)
 
 ## 📄 Licence
 
