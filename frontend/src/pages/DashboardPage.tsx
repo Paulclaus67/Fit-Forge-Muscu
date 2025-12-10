@@ -292,7 +292,7 @@ const DashboardPage: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-semibold text-app-secondary">#{idx + 1}</span>
-                            <h3 className="text-sm font-semibold text-app truncate">{item.label}</h3>
+                            <h2 className="text-sm font-semibold text-app truncate">{item.label}</h2>
                             {item.isOptional && (
                               <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-app-secondary border border-app text-app-secondary">
                                 Opt.

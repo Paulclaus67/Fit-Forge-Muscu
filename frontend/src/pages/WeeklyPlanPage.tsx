@@ -204,11 +204,12 @@ const WeeklyPlanPage: React.FC = () => {
         </div>
 
         {/* Search */}
-        <div className="relative mt-3">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-app-secondary" />
+        <div className="relative mt-4 group">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 blur pointer-events-none" />
+          <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary transition-colors duration-200 group-focus-within:text-primary" />
           <input
-            className="w-full pl-10 pr-4 py-2.5 bg-app-secondary/70 border border-app rounded-xl text-sm text-app placeholder-app-secondary focus:outline-none focus:ring-2 focus:ring-primary transition-all backdrop-blur"
-            placeholder="Rechercher dans le planning..."
+            className="w-full pl-12 pr-4 py-3 bg-gradient-to-br from-app-secondary/80 to-app-secondary/60 border border-app/60 rounded-2xl text-sm text-app placeholder-app-secondary/70 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-all backdrop-blur-sm shadow-lg hover:border-primary/30 hover:bg-gradient-to-br hover:from-app-secondary hover:to-app-secondary/70"
+            placeholder="🔍 Rechercher une séance..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -236,28 +237,28 @@ const WeeklyPlanPage: React.FC = () => {
               <button
                 key={`tab-${day}`}
                 onClick={() => setActiveDay(day)}
-                className={`min-w-[120px] shrink-0 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 shadow-sm ${
+                className={`min-w-[120px] shrink-0 rounded-2xl border px-3 py-3 text-left transition-all duration-300 shadow-sm group/day ${
                   activeDay === day
-                    ? 'bg-primary text-app border-primary shadow-primary/30'
-                    : 'bg-app-secondary border-app text-app hover:border-primary/40'
+                    ? 'bg-gradient-to-br from-primary/95 to-primary/80 text-app border-primary shadow-lg shadow-primary/40 scale-105'
+                    : 'bg-gradient-to-br from-app-secondary/70 to-app-secondary/50 border-app/70 text-app hover:border-primary/50 hover:shadow-md hover:from-app-secondary/80 hover:to-app-secondary/60'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-sm font-semibold leading-tight">{dayLabel[day]}</div>
-                  <ChevronRightIcon className="w-4 h-4" />
+                  <div className={`text-sm font-bold leading-tight transition-colors ${activeDay === day ? 'text-app' : 'text-app group-hover/day:text-primary'}`}>{dayLabel[day]}</div>
+                  <ChevronRightIcon className={`w-4 h-4 transition-transform ${activeDay === day ? 'rotate-90' : ''}`} />
                 </div>
-                <div className="mt-1.5 flex items-center gap-2 text-[11px]">
-                  <span className={`px-2 py-0.5 rounded-full border ${
+                <div className="mt-2 flex items-center gap-1.5 text-[10px] flex-wrap">
+                  <span className={`px-2.5 py-1 rounded-full border font-medium ${
                     activeDay === day
-                      ? 'border-app/40 bg-app/20 text-app'
-                      : 'border-app text-app-secondary'
+                      ? 'border-app/30 bg-app/25 text-app'
+                      : 'border-app/50 text-app-secondary bg-app/10 group-hover/day:border-primary/30 group-hover/day:text-primary group-hover/day:bg-primary/5'
                   }`}>{mainCount} séance{mainCount > 1 ? 's' : ''}</span>
                   {warmupCount > 0 && (
-                    <span className={`px-2 py-0.5 rounded-full text-[11px] flex items-center gap-1 ${
-                      activeDay === day ? 'bg-app/20 text-app border border-app/40' : 'bg-primary/10 text-primary border border-primary/30'
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] flex items-center gap-1 font-medium border ${
+                      activeDay === day ? 'bg-app/25 text-app border-app/30' : 'bg-primary/10 text-primary border-primary/40 group-hover/day:border-primary/60'
                     }`}>
                       <FireIcon className="w-3 h-3" />
-                      {warmupCount} warmup
+                      {warmupCount}
                     </span>
                   )}
                 </div>

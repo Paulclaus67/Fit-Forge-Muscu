@@ -5,15 +5,29 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   // Build optimizations
   build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+      mangle: true,
+    },
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Séparer React et ses dépendances
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          // Séparer Chart.js
-          'chart-vendor': ['chart.js', 'react-chartjs-2'],
-          // Séparer les icônes
-          'icons': ['@heroicons/react'],
+        manualChunks: (id) => {
+          // Lazy-load @heroicons into separate chunk (not bundled with main)
+          if (id.includes('@heroicons')) {
+            return 'icons';
+          }
+          // Keep React ecosystem in vendor chunk
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-router-dom') || id.includes('node_modules/react-dom')) {
+            return 'react-vendor';
+          }
+          // Keep ChartJS in separate chunk for lazy loading
+          if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
+            return 'chart-vendor';
+          }
         },
       },
     },

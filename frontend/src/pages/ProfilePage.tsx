@@ -21,6 +21,45 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
+const MAX_PROFILE_DIMENSION = 512;
+const IMAGE_QUALITY = 0.82;
+
+async function compressImage(file: File): Promise<string> {
+  const fileDataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Erreur lecture fichier'));
+    reader.readAsDataURL(file);
+  });
+
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Erreur chargement image'));
+    image.src = fileDataUrl;
+  });
+
+  const scale = Math.min(
+    1,
+    MAX_PROFILE_DIMENSION / Math.max(img.width, img.height)
+  );
+
+  const targetWidth = Math.max(1, Math.round(img.width * scale));
+  const targetHeight = Math.max(1, Math.round(img.height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    return fileDataUrl;
+  }
+
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+  return canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
+}
+
 const ProfilePage: React.FC = () => {
   const { user, token, logout, updateUser } = useAuth();
   const { mode } = useTheme();
@@ -87,25 +126,17 @@ const ProfilePage: React.FC = () => {
 
     setUploadingPicture(true);
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const base64 = event.target?.result as string;
-        const result = await updateProfilePicture(token, base64);
-        updateUser(result.user);
-      } catch (error) {
-        // Erreur silencieuse en production
+    compressImage(file)
+      .then((base64) => updateProfilePicture(token, base64))
+      .then((result) => updateUser(result.user))
+      .catch((error) => {
         if (import.meta.env.DEV) {
           console.error('Erreur lors de l\'upload:', error);
         }
         alert('Erreur lors de l\'upload de l\'image');
-      } finally {
-        setUploadingPicture(false);
-      }
-    };
-    reader.readAsDataURL(file);
+      })
+      .finally(() => setUploadingPicture(false));
   };
-
   if (!user) {
     // En théorie, on passe par ProtectedRoute donc ça ne devrait pas arriver
     return null;
@@ -229,7 +260,7 @@ const ProfilePage: React.FC = () => {
               </div>
               {/* Graphique temps passé par séance */}
               <div className="bg-app-secondary border border-app rounded-xl p-4">
-                <h3 className="text-md font-semibold text-app mb-2">Temps passé par séance</h3>
+                <h2 className="text-md font-semibold text-app mb-2">Temps passé par séance</h2>
                 {sessionStats.length === 0 ? (
                   <div className="text-sm text-app-secondary">Aucune séance complétée avec durée mesurée pour l'instant.</div>
                 ) : (
