@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css'; // ton style global
 
-// Register Service Worker for PWA functionality
-if ('serviceWorker' in navigator) {
+// Register Service Worker for PWA functionality (production only)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then((registration) => {
