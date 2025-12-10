@@ -209,7 +209,7 @@ const WeeklyPlanPage: React.FC = () => {
           <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary transition-colors duration-200 group-focus-within:text-primary" />
           <input
             className="w-full pl-12 pr-4 py-3 bg-gradient-to-br from-app-secondary/80 to-app-secondary/60 border border-app/60 rounded-2xl text-sm text-app placeholder-app-secondary/70 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-all backdrop-blur-sm shadow-lg hover:border-primary/30 hover:bg-gradient-to-br hover:from-app-secondary hover:to-app-secondary/70"
-            placeholder="🔍 Rechercher une séance..."
+            placeholder="Rechercher une séance..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -228,7 +228,7 @@ const WeeklyPlanPage: React.FC = () => {
           </span>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 px-2">
           {dayOrder.map((day) => {
             const mainCount = itemsByDay[day]?.length ?? 0;
             const warmupCount = warmupsByDay[day]?.length ?? 0;
@@ -239,7 +239,7 @@ const WeeklyPlanPage: React.FC = () => {
                 onClick={() => setActiveDay(day)}
                 className={`min-w-[120px] shrink-0 rounded-2xl border px-3 py-3 text-left transition-all duration-300 shadow-sm group/day ${
                   activeDay === day
-                    ? 'bg-gradient-to-br from-primary/95 to-primary/80 text-app border-primary shadow-lg shadow-primary/40 scale-105'
+                    ? 'bg-gradient-to-br from-primary/95 to-primary/80 text-app border-primary shadow-lg shadow-primary/40'
                     : 'bg-gradient-to-br from-app-secondary/70 to-app-secondary/50 border-app/70 text-app hover:border-primary/50 hover:shadow-md hover:from-app-secondary/80 hover:to-app-secondary/60'
                 }`}
               >
