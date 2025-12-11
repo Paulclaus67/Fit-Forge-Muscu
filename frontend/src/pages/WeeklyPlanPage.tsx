@@ -176,14 +176,15 @@ const WeeklyPlanPage: React.FC = () => {
     () =>
       dayOrder.map((day) => {
         const mainLabel = itemsByDay[day]?.[0]?.label ?? null;
-        const warmupLabel = warmupsByDay[day]?.[0]?.label ?? null;
-        const label = mainLabel || warmupLabel || 'Repos';
+        const label = mainLabel || 'Repos';
         const hasContent = (itemsByDay[day]?.length ?? 0) + (warmupsByDay[day]?.length ?? 0) > 0;
+        const workoutName = itemsByDay[day]?.[0]?.workout?.name ?? null;
 
         return {
           day,
           label,
           hasContent,
+          workoutName,
         };
       }),
     [itemsByDay, warmupsByDay]
@@ -375,15 +376,24 @@ const WeeklyPlanPage: React.FC = () => {
                 </div>
               </div>
               <ul className="divide-y divide-app/60">
-                {weeklySummary.map(({ day, label, hasContent }) => (
-                  <li key={day} className="flex items-center justify-between py-2.5">
-                    <span className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-app w-10">{dayLabel[day].slice(0, 3)}</span>
-                      <span className="text-sm text-app-secondary">{label}</span>
-                    </span>
-                    <span className={`h-2.5 w-2.5 rounded-full ${hasContent ? 'bg-primary' : 'bg-app-secondary'}`} aria-hidden />
-                  </li>
-                ))}
+                {weeklySummary.map(({ day, label, hasContent, workoutName }) => {
+                  const isToday = day === today;
+                  return (
+                    <li key={day} className="flex items-center justify-between py-2.5">
+                      <span className="flex items-center gap-3 flex-1">
+                        <span className={`text-sm font-semibold w-10 ${isToday ? 'text-primary' : 'text-app'}`}>{dayLabel[day].slice(0, 3)}</span>
+                        <div className="flex flex-col gap-0.5">
+                          {workoutName ? (
+                            <span className="text-sm text-app font-semibold">{workoutName}</span>
+                          ) : (
+                            <span className="text-sm text-app">{label}</span>
+                          )}
+                        </div>
+                      </span>
+                      <span className={`h-2.5 w-2.5 rounded-full ${hasContent ? 'bg-primary' : 'bg-app-secondary'}`} aria-hidden />
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           </>

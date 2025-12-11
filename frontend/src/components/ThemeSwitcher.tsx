@@ -62,11 +62,11 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
         type="button"
         onClick={() => setOpen((o) => !o)}
         ref={buttonRef}
-        className={`group relative inline-flex items-center justify-center ${buttonSize} rounded-full dark:bg-gradient-to-br dark:from-primary dark:via-accent dark:to-primary bg-app-secondary shadow-lg border-2 dark:border-primary/50 border-app transition-all duration-300 hover:scale-110 dark:hover:shadow-xl hover:shadow-lg active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary overflow-hidden`}
+        className={`group relative inline-flex items-center justify-center ${buttonSize} rounded-full dark:bg-linear-to-br dark:from-primary dark:via-accent dark:to-primary bg-app-secondary shadow-lg border-2 dark:border-primary/50 border-app transition-all duration-300 hover:scale-110 dark:hover:shadow-xl hover:shadow-lg active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary overflow-hidden`}
         aria-label="Choisir le thème"
         title="Choisir le thème"
       >
-        <div className="absolute inset-0 rounded-full dark:bg-gradient-to-br dark:from-white/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 rounded-full dark:bg-linear-to-br dark:from-white/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         {mode === 'dark' ? (
           <SunIcon className="w-6 h-6 dark:text-white text-primary relative z-10 transition-transform group-hover:rotate-180 duration-500 drop-shadow-md" />
         ) : (
