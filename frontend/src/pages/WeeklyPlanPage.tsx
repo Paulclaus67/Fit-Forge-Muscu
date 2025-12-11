@@ -177,13 +177,13 @@ const WeeklyPlanPage: React.FC = () => {
       dayOrder.map((day) => {
         const mainLabel = itemsByDay[day]?.[0]?.label ?? null;
         const label = mainLabel || 'Repos';
-        const hasContent = (itemsByDay[day]?.length ?? 0) + (warmupsByDay[day]?.length ?? 0) > 0;
+        const hasWorkout = itemsByDay[day]?.some((item) => item.workout) ?? false;
         const workoutName = itemsByDay[day]?.[0]?.workout?.name ?? null;
 
         return {
           day,
           label,
-          hasContent,
+          hasContent: hasWorkout,
           workoutName,
         };
       }),
@@ -213,7 +213,7 @@ const WeeklyPlanPage: React.FC = () => {
           </div>
           <div className="flex gap-2 overflow-x-auto pb-3 px-1 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
             {dayOrder.map((day) => {
-              const hasContent = (itemsByDay[day]?.length ?? 0) + (warmupsByDay[day]?.length ?? 0) > 0;
+              const hasContent = itemsByDay[day]?.some((item) => item.workout) ?? false;
               const isActive = activeDay === day;
               const isToday = day === today;
 
