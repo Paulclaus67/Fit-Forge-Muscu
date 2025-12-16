@@ -42,27 +42,34 @@ const dayOrder: DayOfWeek[] = [
   'SUNDAY',
 ];
 
+function getTodayDayOfWeek(): DayOfWeek {
+  const jsDay = new Date().getDay();
+  switch (jsDay) {
+    case 0: return 'SUNDAY';
+    case 1: return 'MONDAY';
+    case 2: return 'TUESDAY';
+    case 3: return 'WEDNESDAY';
+    case 4: return 'THURSDAY';
+    case 5: return 'FRIDAY';
+    case 6: return 'SATURDAY';
+    default: return 'MONDAY';
+  }
+}
+
 const WeeklyPlanPage: React.FC = () => {
   const { token } = useAuth();
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingItemId, setSavingItemId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeDay, setActiveDay] = useState<DayOfWeek>('MONDAY');
+
+  const today = useMemo<DayOfWeek>(() => getTodayDayOfWeek(), []);
+  const [activeDay, setActiveDay] = useState<DayOfWeek>(() => getTodayDayOfWeek());
 
   const [templates, setTemplates] = useState<Workout[]>([]);
   const [mine, setMine] = useState<Workout[]>([]);
 
-  const today = useMemo<DayOfWeek>(() => {
-    const jsDay = new Date().getDay();
-    if (jsDay === 0) return 'SUNDAY';
-    if (jsDay === 1) return 'MONDAY';
-    if (jsDay === 2) return 'TUESDAY';
-    if (jsDay === 3) return 'WEDNESDAY';
-    if (jsDay === 4) return 'THURSDAY';
-    if (jsDay === 5) return 'FRIDAY';
-    return 'SATURDAY';
-  }, []);
+
 
   useEffect(() => {
     if (!token) return;
@@ -211,7 +218,7 @@ const WeeklyPlanPage: React.FC = () => {
             <CalendarDaysIcon className="w-4 h-4" />
             <span>Ta semaine en un coup d'œil</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-3 px-1 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex gap-2 overflow-x-auto pb-3 pt-3 px-1 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
             {dayOrder.map((day) => {
               const hasContent = itemsByDay[day]?.some((item) => item.workout) ?? false;
               const isActive = activeDay === day;
@@ -232,7 +239,7 @@ const WeeklyPlanPage: React.FC = () => {
                     <span className={`h-2 w-2 rounded-full ${hasContent ? 'bg-primary' : 'bg-app-secondary'}`} aria-hidden />
                   </span>
                   {isToday && isActive && (
-                    <span className="absolute -top-2 right-2 text-[10px] rounded-full bg-app text-app-secondary px-2 py-0.5 border border-primary/40">Aujourd’hui</span>
+                    <span className="absolute top-0 right-2 -translate-y-1/2 z-10 text-[10px] rounded-full bg-app text-app-secondary px-2 py-0.5 border border-primary/40">Aujourd’hui</span>
                   )}
                 </button>
               );
