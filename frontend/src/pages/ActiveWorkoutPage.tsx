@@ -89,8 +89,11 @@ const ActiveWorkoutPage: React.FC = () => {
     return localStorage.getItem(STORAGE_KEY) === null;
   });
 
+
   // Wake Lock pour empêcher la mise en veille
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  // Évite les doubles déclenchements lors de la fin auto du repos
+  const restAutoDoneRef = useRef(false);
 
   // Charger la séance + session sauvegardée
   useEffect(() => {
@@ -116,7 +119,7 @@ const ActiveWorkoutPage: React.FC = () => {
       }
     };
     run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [id]);
 
   // Démarrer la séance (initialiser le chrono global) quand on quitte le récap
@@ -196,9 +199,11 @@ const ActiveWorkoutPage: React.FC = () => {
     return () => clearInterval(t);
   }, [sessionStart]);
 
+
   // Compter le repos quand il est en cours
   useEffect(() => {
     if (!restRunning || restRemaining === null) return;
+    if (restRemaining <= 0) return;
     const t = setInterval(() => {
       setRestRemaining(prev => {
         if (prev === null) return null;
@@ -209,14 +214,45 @@ const ActiveWorkoutPage: React.FC = () => {
     return () => clearInterval(t);
   }, [restRunning, restRemaining]);
 
+  // Centralise la fin/fermeture du repos (retour à l'écran exercice)
+  const endRest = () => {
+    setRestRunning(false);
+    setRestRemaining(null);
+    setShowAdvancedOptions(false);
+  };
+
+  // Stoppe l'état "running" quand on est à 0 (évite état incohérent)
+  useEffect(() => {
+    if (restRemaining === 0 && restRunning) {
+      setRestRunning(false);
+    }
+  }, [restRemaining, restRunning]);
+
+  // Passage automatique: quand le repos atteint 0 => afficher automatiquement l'exercice suivant
+  // (Dans ton flux, l'exercice suivant est souvent déjà sélectionné au moment de lancer le repos
+  //  sur la dernière série de l'exercice précédent.)
+  useEffect(() => {
+    if (restRemaining === null) {
+      restAutoDoneRef.current = false;
+      return;
+    }
+    if (restRemaining > 0) return;
+
+    // restRemaining === 0
+    if (restAutoDoneRef.current) return;
+    restAutoDoneRef.current = true;
+
+    endRest();
+  }, [restRemaining]);
+
+
   const handleToggleRest = () => {
     if (restRemaining === null) return;
     setRestRunning(v => !v);
   };
 
   const handleResetRest = () => {
-    setRestRemaining(null);
-    setRestRunning(false);
+    endRest();
   };
 
   const handleAdd15Sec = () => {
@@ -474,10 +510,13 @@ const ActiveWorkoutPage: React.FC = () => {
       const totalSets = currentExercise.sets ?? 1;
 
       // Si on n'est pas à la dernière série de l'exercice courant
+
       if (setNumber < totalSets) {
         setSetNumber(setNumber + 1);
         // Démarrer le chrono de repos si défini
         if (currentExercise.restSec && currentExercise.restSec > 0) {
+          // (Optionnel) reset du flag auto-fin pour sécurité
+          restAutoDoneRef.current = false;
           setRestRemaining(currentExercise.restSec);
           setRestRunning(true); // Démarrer automatiquement
         } else {
@@ -491,6 +530,8 @@ const ActiveWorkoutPage: React.FC = () => {
           setSetNumber(1);
           const nextExercise = workout.exercises[exerciseIndex + 1];
           if (nextExercise.restSec && nextExercise.restSec > 0) {
+            // (Optionnel) reset du flag auto-fin pour sécurité
+            restAutoDoneRef.current = false;
             setRestRemaining(nextExercise.restSec);
             setRestRunning(true); // Démarrer automatiquement
           } else {
@@ -817,11 +858,12 @@ const ActiveWorkoutPage: React.FC = () => {
             {/* Footer - Contrôles principaux */}
             <div className={`border-t ${borderClass} px-4 py-3 space-y-2`}>
               {/* CTA principal */}
+
               <button
-                onClick={handleCompleteSet}
+                onClick={restRemaining !== null ? handleResetRest : handleCompleteSet}
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-colors active:scale-95 btn-primary`}
               >
-                {restRemaining !== null ? 'Série suivante' : 'Série terminée'}
+                {restRemaining !== null ? 'Passer le repos' : 'Série terminée'}
               </button>
 
               {/* Navigation exercices (petit et discret) */}
