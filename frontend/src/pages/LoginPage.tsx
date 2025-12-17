@@ -76,12 +76,12 @@ const LoginPage: React.FC = () => {
           type="button"
           onClick={() => setOpenThemeMenu((o) => !o)}
           ref={themeButtonRef}
-          className="group relative inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="group relative inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-linear-to-br from-primary/10 to-accent/10 border-2 border-primary transition-all duration-300 hover:scale-110 hover:shadow-lg active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-label="Choisir le thème"
           title="Choisir le thème"
           aria-expanded={openThemeMenu}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+          <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
           {mode === 'dark' ? (
             <SunIcon className="w-6 h-6 text-primary relative z-10 transition-transform group-hover:rotate-180 duration-500" />
           ) : (
@@ -105,7 +105,7 @@ const LoginPage: React.FC = () => {
                   type="button"
                 >
                   {mode === 'light' && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-transparent" />
                   )}
                   <SunIcon className={`w-7 h-7 relative z-10 transition-transform duration-300 ${mode === 'light' ? 'text-primary rotate-180' : 'group-hover:rotate-12'}`} />
                   <span className="text-xs font-semibold relative z-10">Clair</span>
@@ -121,7 +121,7 @@ const LoginPage: React.FC = () => {
                   type="button"
                 >
                   {mode === 'dark' && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-transparent" />
                   )}
                   <MoonIcon className={`w-7 h-7 relative z-10 transition-transform duration-300 ${mode === 'dark' ? 'text-primary -rotate-12' : 'group-hover:-rotate-12'}`} />
                   <span className="text-xs font-semibold relative z-10">Sombre</span>
@@ -149,7 +149,7 @@ const LoginPage: React.FC = () => {
                       type="button"
                     >
                       {isSelected && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+                        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10" />
                       )}
                       
                       <div className="relative z-10 shrink-0">
@@ -188,7 +188,7 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-sm animate-slide-in">
         {/* Logo & Header */}
         <div className="flex flex-col items-center justify-center mb-8">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg mb-4 bg-gradient-to-br from-primary to-accent">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg mb-4 bg-linear-to-br from-primary to-accent">
             <BoltIcon className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-app">FitForge</h1>

@@ -31,7 +31,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           {action && (
             <button
               onClick={action.onClick}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-app rounded-lg font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-app rounded-lg font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 shrink-0"
             >
               {action.icon}
               {action.label}

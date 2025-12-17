@@ -39,7 +39,7 @@ export const ListItem: React.FC<ListItemProps> = ({
       }
     >
       {icon && (
-        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+        <div className="shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
           {icon}
         </div>
       )}
@@ -52,12 +52,12 @@ export const ListItem: React.FC<ListItemProps> = ({
       </div>
 
       {badge && (
-        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary flex-shrink-0">
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary shrink-0">
           {badge}
         </span>
       )}
 
-      {action && <div className="flex-shrink-0">{action}</div>}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 };

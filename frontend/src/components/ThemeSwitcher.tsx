@@ -62,15 +62,15 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
         type="button"
         onClick={() => setOpen((o) => !o)}
         ref={buttonRef}
-        className={`group relative inline-flex items-center justify-center ${buttonSize} rounded-full bg-gradient-to-br from-primary via-accent to-primary shadow-lg border-2 border-primary/50 transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary overflow-hidden`}
+        className={`group relative inline-flex items-center justify-center ${buttonSize} rounded-full dark:bg-linear-to-br dark:from-primary dark:via-accent dark:to-primary bg-app-secondary shadow-lg border-2 dark:border-primary/50 border-app transition-all duration-300 hover:scale-110 dark:hover:shadow-xl hover:shadow-lg active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary overflow-hidden`}
         aria-label="Choisir le thème"
         title="Choisir le thème"
       >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 rounded-full dark:bg-linear-to-br dark:from-white/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         {mode === 'dark' ? (
-          <SunIcon className="w-6 h-6 text-white relative z-10 transition-transform group-hover:rotate-180 duration-500 drop-shadow-md" />
+          <SunIcon className="w-6 h-6 dark:text-white text-primary relative z-10 transition-transform group-hover:rotate-180 duration-500 drop-shadow-md" />
         ) : (
-          <MoonIcon className="w-6 h-6 text-white relative z-10 transition-transform group-hover:-rotate-12 duration-300 drop-shadow-md" />
+          <MoonIcon className="w-6 h-6 dark:text-white text-primary relative z-10 transition-transform group-hover:-rotate-12 duration-300 drop-shadow-md" />
         )}
         {withLabel && (
           <span className="sr-only">{label}</span>
@@ -92,7 +92,7 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
                 }`}
               >
                 {mode === 'light' && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-transparent" />
                 )}
                 <SunIcon
                   className={`w-7 h-7 relative z-10 transition-transform duration-300 ${
@@ -111,7 +111,7 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
                 }`}
               >
                 {mode === 'dark' && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-transparent" />
                 )}
                 <MoonIcon
                   className={`w-7 h-7 relative z-10 transition-transform duration-300 ${
@@ -142,10 +142,10 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
                     aria-label={`Choisir le thème ${t}`}
                   >
                     {isSelected && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+                      <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10" />
                     )}
 
-                    <div className="relative z-10 flex-shrink-0">
+                    <div className="relative z-10 shrink-0">
                       <div
                         className={`w-10 h-10 rounded-full shadow-md transition-transform duration-300 ${
                           isSelected ? 'scale-110 ring-2 ring-primary ring-offset-2 ring-offset-app-secondary' : 'group-hover:scale-110'

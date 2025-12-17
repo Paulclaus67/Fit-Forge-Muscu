@@ -42,27 +42,34 @@ const dayOrder: DayOfWeek[] = [
   'SUNDAY',
 ];
 
+function getTodayDayOfWeek(): DayOfWeek {
+  const jsDay = new Date().getDay();
+  switch (jsDay) {
+    case 0: return 'SUNDAY';
+    case 1: return 'MONDAY';
+    case 2: return 'TUESDAY';
+    case 3: return 'WEDNESDAY';
+    case 4: return 'THURSDAY';
+    case 5: return 'FRIDAY';
+    case 6: return 'SATURDAY';
+    default: return 'MONDAY';
+  }
+}
+
 const WeeklyPlanPage: React.FC = () => {
   const { token } = useAuth();
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingItemId, setSavingItemId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeDay, setActiveDay] = useState<DayOfWeek>('MONDAY');
+
+  const today = useMemo<DayOfWeek>(() => getTodayDayOfWeek(), []);
+  const [activeDay, setActiveDay] = useState<DayOfWeek>(() => getTodayDayOfWeek());
 
   const [templates, setTemplates] = useState<Workout[]>([]);
   const [mine, setMine] = useState<Workout[]>([]);
 
-  const today = useMemo<DayOfWeek>(() => {
-    const jsDay = new Date().getDay();
-    if (jsDay === 0) return 'SUNDAY';
-    if (jsDay === 1) return 'MONDAY';
-    if (jsDay === 2) return 'TUESDAY';
-    if (jsDay === 3) return 'WEDNESDAY';
-    if (jsDay === 4) return 'THURSDAY';
-    if (jsDay === 5) return 'FRIDAY';
-    return 'SATURDAY';
-  }, []);
+
 
   useEffect(() => {
     if (!token) return;
@@ -176,14 +183,15 @@ const WeeklyPlanPage: React.FC = () => {
     () =>
       dayOrder.map((day) => {
         const mainLabel = itemsByDay[day]?.[0]?.label ?? null;
-        const warmupLabel = warmupsByDay[day]?.[0]?.label ?? null;
-        const label = mainLabel || warmupLabel || 'Repos';
-        const hasContent = (itemsByDay[day]?.length ?? 0) + (warmupsByDay[day]?.length ?? 0) > 0;
+        const label = mainLabel || 'Repos';
+        const hasWorkout = itemsByDay[day]?.some((item) => item.workout) ?? false;
+        const workoutName = itemsByDay[day]?.[0]?.workout?.name ?? null;
 
         return {
           day,
           label,
-          hasContent,
+          hasContent: hasWorkout,
+          workoutName,
         };
       }),
     [itemsByDay, warmupsByDay]
@@ -205,14 +213,14 @@ const WeeklyPlanPage: React.FC = () => {
         </div>
 
         {/* Sélecteur de jours en pills */}
-        <div className="sticky top-4 z-10 backdrop-blur">
+        <div className="z-10 backdrop-blur">
           <div className="flex items-center gap-2 text-[11px] text-app-secondary mb-2 px-1">
             <CalendarDaysIcon className="w-4 h-4" />
-            <span>Ta semaine en un coup d’œil</span>
+            <span>Ta semaine en un coup d'œil</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-3 px-1 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex gap-2 overflow-x-auto pb-3 pt-3 px-1 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
             {dayOrder.map((day) => {
-              const hasContent = (itemsByDay[day]?.length ?? 0) + (warmupsByDay[day]?.length ?? 0) > 0;
+              const hasContent = itemsByDay[day]?.some((item) => item.workout) ?? false;
               const isActive = activeDay === day;
               const isToday = day === today;
 
@@ -231,7 +239,7 @@ const WeeklyPlanPage: React.FC = () => {
                     <span className={`h-2 w-2 rounded-full ${hasContent ? 'bg-primary' : 'bg-app-secondary'}`} aria-hidden />
                   </span>
                   {isToday && isActive && (
-                    <span className="absolute -top-2 right-2 text-[10px] rounded-full bg-app text-app-secondary px-2 py-0.5 border border-primary/40">Aujourd’hui</span>
+                    <span className="absolute top-0 right-2 -translate-y-1/2 z-10 text-[10px] rounded-full bg-app text-app-secondary px-2 py-0.5 border border-primary/40">Aujourd’hui</span>
                   )}
                 </button>
               );
@@ -375,15 +383,24 @@ const WeeklyPlanPage: React.FC = () => {
                 </div>
               </div>
               <ul className="divide-y divide-app/60">
-                {weeklySummary.map(({ day, label, hasContent }) => (
-                  <li key={day} className="flex items-center justify-between py-2.5">
-                    <span className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-app w-10">{dayLabel[day].slice(0, 3)}</span>
-                      <span className="text-sm text-app-secondary">{label}</span>
-                    </span>
-                    <span className={`h-2.5 w-2.5 rounded-full ${hasContent ? 'bg-primary' : 'bg-app-secondary'}`} aria-hidden />
-                  </li>
-                ))}
+                {weeklySummary.map(({ day, label, hasContent, workoutName }) => {
+                  const isToday = day === today;
+                  return (
+                    <li key={day} className="flex items-center justify-between py-2.5">
+                      <span className="flex items-center gap-3 flex-1">
+                        <span className={`text-sm font-semibold w-10 ${isToday ? 'text-primary' : 'text-app'}`}>{dayLabel[day].slice(0, 3)}</span>
+                        <div className="flex flex-col gap-0.5">
+                          {workoutName ? (
+                            <span className="text-sm text-app font-semibold">{workoutName}</span>
+                          ) : (
+                            <span className="text-sm text-app">{label}</span>
+                          )}
+                        </div>
+                      </span>
+                      <span className={`h-2.5 w-2.5 rounded-full ${hasContent ? 'bg-primary' : 'bg-app-secondary'}`} aria-hidden />
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           </>

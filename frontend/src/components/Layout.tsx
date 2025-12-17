@@ -37,7 +37,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideNav }) => {
   return (
     <div className="min-h-screen flex flex-col bg-app text-app transition-colors">
       {/* Header */}
-      <header className="sticky top-0 z-20 backdrop-blur-2xl bg-gradient-to-b from-app-secondary/95 to-app-secondary/70 border-b border-primary/20 shadow-md transition-all duration-300">
+      <header className="sticky top-0 z-20 bg-app-secondary/95 backdrop-blur-xl shadow-md transition-all duration-300" style={{ borderBottom: '1px solid var(--border-accent)' }}>
         <div className="px-6 py-4 flex items-center justify-between max-w-md mx-auto relative">
           <Link to="/" className="flex items-center gap-2 group cursor-pointer">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-active:scale-95" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)' }}>
@@ -52,7 +52,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideNav }) => {
           {/* Pastille DEV centrée, visible uniquement en dev */}
           {import.meta.env.MODE === 'development' && (
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-              <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-white">DEV</span>
+              <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-red-700">DEV</span>
             </div>
           )}
 
@@ -67,7 +67,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideNav }) => {
 
       {/* Bottom nav */}
       {!hideNav && (
-        <nav className="fixed bottom-0 left-0 right-0 z-20 bg-app-secondary/95 backdrop-blur-xl border-t border-app/30 shadow-2xl transition-colors">
+        <nav className="fixed bottom-0 left-0 right-0 z-20 bg-app-secondary/95 backdrop-blur-xl shadow-2xl transition-colors" style={{ borderTop: '1px solid var(--border-accent)' }}>
           <div
             className="max-w-md mx-auto px-3 pt-1 pb-1"
             style={{
